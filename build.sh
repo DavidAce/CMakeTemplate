@@ -20,7 +20,7 @@ Usage            : $PROGNAME [-option <argument>]
 -p <path>        : Path to gcc installation (default = )
 
 EXAMPLE:
-./build.sh -s OFF -a native -j 20 -o OFF  -b Release -c  -g Clang
+./build.sh -s OFF -a native -j 20 -o OFF  -b Release -c
 EOF
   exit 1
 }
