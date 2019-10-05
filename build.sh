@@ -32,10 +32,9 @@ march="native"
 omp="OFF"
 shared="OFF"
 make_threads=8
-clear_cmake=""
 clear_libs=""
 
-while getopts a:b:dg:hj:l:Lo:p:s:t: o; do
+while getopts a:b:cdg:hj:l:Lo:p:s:t: o; do
     case $o in
 	    (a) march=$OPTARG;;
         (b) build=$OPTARG;;
@@ -58,7 +57,7 @@ done
 shift "$((OPTIND - 1))"
 
 
-if [ "$clear_cmake" = true ] ; then
+if [ -n "$clear_cmake" ] ; then
     echo "Clearing CMake files from build."
 	rm -rf ./build
 fi
