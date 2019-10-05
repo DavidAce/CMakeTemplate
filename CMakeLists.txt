@@ -8,11 +8,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                                                      ON)
+option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                                                      OFF)
 option(ENABLE_TESTS       "Enable testing"                                                                  ON )
 option(ENABLE_SPDLOG      "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        ON )
 option(DOWNLOAD_LIBS      "Download enabled libraries that aren't found"                                    ON )
-option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              ON)
+option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              OFF)
 
 
 #################################################################
