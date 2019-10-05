@@ -7,6 +7,21 @@ Different templates can be found in the branches of this repository.
 - C++ compiler with C++17 support
 - CMake version 3.10 or above.
 
+## Usage
+Build as any regular out-of-source CMake project.
+
+To make it even simpler you can use the supplied build script `./build.sh`.
+
+For instance, to build the branch `cpp-cmake` simply run these lines at the command-line:
+
+    git clone https://github.com/DavidAce/CMakeTemplates.git
+    cd CMakeTemplates
+    git checkout cpp-cmake
+    ./build.sh
+
+Type `./build.sh -h` to see how to enable/disable more options.
+
+
 ## Common options on all templates
 - Enable/disable OpenMP `-D ENABLE_OPENMP:BOOL=ON/OFF`     (default `OFF`)
 - spdlog logging library `-D ENABLE_SPDLOG:BOOL=ON/OFF`    (default `ON`)
