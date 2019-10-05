@@ -70,7 +70,7 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
 #        message("OpenMP_LIBRARIES    : ${OpenMP_LIBRARIES} ")
 #        message("OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
 
-        list(APPEND OpenMP_LIBRARIES  Threads::Threads)
+        list(APPEND OpenMP_LIBRARIES  Threads::Threads -ldl)
         message(STATUS "OpenMP libraries found: ${OpenMP_LIBRARIES}" )
         if(BUILD_SHARED_LIBS)
             check_omp_compiles("${OpenMP_FLAGS}" "${OpenMP_LIBRARIES}" "${OpenMP_INCLUDE_DIR}")
