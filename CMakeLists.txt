@@ -96,7 +96,6 @@ endif()
 ### Compiler-dependent compiler flags                          ###
 ##################################################################
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    list(APPEND RELEASE_OPTIONS -fopt-info -fopt-info-missed)
     list(APPEND PROFILE_OPTIONS -fopt-info -fopt-info-missed)
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     list(APPEND COMMON_OPTIONS ${GCC_TOOLCHAIN})
