@@ -1,7 +1,6 @@
 //
 // Created by david on 2019-10-05.
 //
-
 #include "logger.h"
 
 int main(){
