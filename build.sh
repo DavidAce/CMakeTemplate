@@ -35,14 +35,14 @@ omp="OFF"
 shared="OFF"
 make_threads=8
 clear_libs=""
-download_deps="OFF"
+enable_deps="OFF"
 while getopts a:b:cdDf:g:hj:l:Lo:p:s:t: o; do
     case $o in
 	    (a) march=$OPTARG;;
         (b) build=$OPTARG;;
         (c) clear_cmake="true";;
         (d) dryrun="true";;
-        (D) download_deps="ON";;
+        (D) enable_deps="ON";;
         (f) flags=$OPTARG;;
         (h) usage;;
         (j) make_threads=$OPTARG;;
@@ -83,7 +83,7 @@ echo "Micro arch.     :   $march"
 echo "Target          :   $target"
 echo "Build threads   :   $make_threads"
 echo "Build Type      :   $build"
-echo "Download deps   :   $download_deps"
+echo "Download deps   :   $enable_deps"
 echo "OpenMP          :   $omp"
 echo "Shared build    :   $shared"
 echo "gcc toolchain   :   $gcc_toolchain"
@@ -108,9 +108,9 @@ if [ -z "$dryrun" ] ;then
     cmake   -DCMAKE_BUILD_TYPE=$build \
             -DMARCH=$march \
             -DENABLE_OPENMP=$omp \
-            -DENABLE_SPDLOG=$download_deps \
-            -DENABLE_H5PP=$download_deps \
-            -DDOWNLOAD_LIBS=$download_deps \
+            -DENABLE_SPDLOG=$enable_deps \
+            -DENABLE_H5PP=$enable_deps \
+            -DDOWNLOAD_LIBS=$enable_deps \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
             $flags \
