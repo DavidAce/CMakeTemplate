@@ -20,7 +20,8 @@ if(NOT TARGET hdf5::hdf5)
                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                 -DCMAKE_BUILD_TYPE=Release
                 -DCMAKE_ANSI_CFLAGS:STRING=-fPIC
-                -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+                -DBUILD_SHARED_LIBS:BOOL=ON
+                -DBUILD_STATIC_LIBS:BOOL=ON
                 -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
                 -DHDF5_ENABLE_PARALLEL=${HDF5_IS_PARALLEL}
                 -DALLOW_UNSUPPORTED=ON
@@ -60,7 +61,7 @@ if(NOT TARGET hdf5::hdf5)
         )
 
     else()
-        message("WARNING: Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF. Build will fail.")
+        message("WARNING: Dependency HDF5 not found and DOWNLOAD_ALL is OFF. Build will fail.")
     endif()
 
 endif()
