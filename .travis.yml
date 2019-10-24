@@ -81,10 +81,11 @@ before_install:
 
 script:
   - ./build.sh -j 2
-  - ./build.sh -j 2 -c -L  -s OFF -o OFF
-  - ./build.sh -j 2 -c -L  -s OFF -o OFF -D
-  - ./build.sh -j 2 -c  -s ON -o ON -D
-  - ./build.sh -j 2 -c  -s OFF -o ON -D
+  - ./build.sh -j 2 -c -L -s OFF -o OFF
+  - ./build.sh -j 2 -c -L -s OFF -o OFF -D
+  - ./build.sh -j 2 -c    -s OFF -o OFF -D
+  - ./build.sh -j 2 -c -L -s ON -o ON -D
+  - ./build.sh -j 2 -c    -s ON -o ON -D
 
 
 
