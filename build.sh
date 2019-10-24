@@ -110,7 +110,7 @@ if [ -z "$dryrun" ] ;then
             -DENABLE_OPENMP=$omp \
             -DENABLE_SPDLOG=$enable_deps \
             -DENABLE_H5PP=$enable_deps \
-            -DDOWNLOAD_LIBS=$enable_deps \
+            -DDOWNLOAD_MISSING=$enable_deps \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
             $flags \
