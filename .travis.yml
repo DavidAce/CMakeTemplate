@@ -5,7 +5,7 @@ notifications:
   email: false
 branches:
   only:
-    - cpp-cmake
+    - master
 
 matrix:
   fast_finish: true
