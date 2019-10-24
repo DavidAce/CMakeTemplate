@@ -11,6 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                                                      OFF)
 option(ENABLE_TESTS       "Enable testing"                                                                  ON )
 option(ENABLE_SPDLOG      "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        ON )
+option(ENABLE_H5PP        "Use h5pp, a C++ front-end to HDF5"                                               ON )
 option(DOWNLOAD_LIBS      "Download enabled libraries that aren't found"                                    ON )
 option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              OFF)
 
@@ -255,30 +256,48 @@ if(NOT INSTALL_DIRECTORY)
     set(INSTALL_DIRECTORY ${PROJECT_SOURCE_DIR}/libs)
 endif()
 
-include(cmake-modules/Fetch_spdlog.cmake)
-
-
-
-
-
-##################################################################
-### Print all generated targets for dependencies               ###
-##################################################################
-if(TARGET OpenMP)
-    get_target_property(OMP_INFO_LIB   OpenMP            INTERFACE_LINK_LIBRARIES)
-    get_target_property(OMP_INFO_INC   OpenMP            INTERFACE_INCLUDE_DIRECTORIES)
+if (ENABLE_SPDLOG)
+    include(cmake-modules/Fetch_spdlog.cmake)
 endif()
 
-get_target_property(SPDLOG_INFO         spdlog::spdlog   INTERFACE_INCLUDE_DIRECTORIES)
+if (ENABLE_H5PP)
+    include(cmake-modules/Fetch_h5pp.cmake)
+endif()
 
 
 
 ##################################################################
 ### Link all generated targets for dependencies                ###
 ##################################################################
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${COMPILER_LFLAGS})
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
+if (TARGET spdlog::spdlog AND ENABLE_SPDLOG)
+    target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
+endif()
+
+if (TARGET h5pp::h5pp AND ENABLE_H5PP)
+    target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
+endif()
+
+
+##################################################################
+### Print all generated targets for dependencies               ###
+##################################################################
+if(TARGET OpenMP AND ENABLE_OPENMP)
+    get_target_property(OMP_INFO_LIB   OpenMP            INTERFACE_LINK_LIBRARIES)
+    get_target_property(OMP_INFO_INC   OpenMP            INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+
+if(TARGET spdlog::spdlog AND ENABLE_SPDLOG)
+    get_target_property(SPDLOG_INFO         spdlog::spdlog   INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+
+if(TARGET h5pp::h5pp AND ENABLE_H5PP)
+    get_target_property(H5PP_INFO_INC         h5pp::h5pp   INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(H5PP_DEPS_LIB         h5pp::deps   INTERFACE_LINK_LIBRARIES)
+endif()
+
 
 
 ##################################################################
@@ -286,8 +305,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EX
 ##################################################################
 message("=============================================================================")
 message("=== SUMMARY OF CMAKE CONFIGURATION:  THE FOLLOWING LIBRARIES WILL BE USED ===")
+if(ENABLE_SPDLOG)
 message("=============================================================================")
 message("    SPDLOG         INC:  ${SPDLOG_INFO}")
+endif()
+if(ENABLE_H5PP)
+message("=============================================================================")
+message("    H5PP           INC:  ${H5PP_INFO_INC}")
+message("                   DEP:  ${H5PP_DEPS_LIB}")
+endif()
 message("=============================================================================")
 message("")
 
@@ -321,6 +347,10 @@ if(ENABLE_TESTS)
     if(ENABLE_SPDLOG)
         add_subdirectory(tests/spdlog EXCLUDE_FROM_ALL)
         add_dependencies(all-tests test-spdlog)  #Make sure the test gets built after main project
+    endif()
+    if(ENABLE_H5PP)
+        add_subdirectory(tests/h5pp EXCLUDE_FROM_ALL)
+        add_dependencies(all-tests test-h5pp)  #Make sure the test gets built after main project
     endif()
     if(ENABLE_OPENMP)
         add_subdirectory(tests/openmp EXCLUDE_FROM_ALL)

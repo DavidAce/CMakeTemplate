@@ -2,7 +2,6 @@
 # CMake Templates
 A collecion of templates for building C++17 projects using **modern** CMake. 
 
-Different templates can be found in the branches of this repository.
 
 ## Features
 All these templates have a basic set of features in common:
