@@ -42,7 +42,7 @@ if(EIGEN3_FOUND AND TARGET Eigen3::Eigen)
         target_link_libraries(Eigen3 INTERFACE blas)
     endif()
 
-elseif (DOWNLOAD_LIBS)
+elseif (DOWNLOAD_MISSING)
     message(STATUS "Eigen3 will be installed into ${INSTALL_DIRECTORY}/Eigen3 on first build.")
 
     include(ExternalProject)
@@ -77,7 +77,7 @@ elseif (DOWNLOAD_LIBS)
         target_link_libraries(Eigen3 INTERFACE blas)
     endif()
 else()
-    message("WARNING: Dependency Eigen3 not found and DOWNLOAD_LIBS is OFF. Build will fail.")
+    message("WARNING: Dependency Eigen3 not found and DOWNLOAD_MISSING is OFF. Build will fail.")
 endif()
 
 

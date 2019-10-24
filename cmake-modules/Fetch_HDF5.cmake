@@ -6,7 +6,7 @@ if(NOT TARGET hdf5::hdf5)
     if(HDF5_FOUND AND TARGET hdf5)
         message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
         return()
-    elseif (DOWNLOAD_LIBS)
+    elseif (DOWNLOAD_MISSING)
         message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY}/hdf5 on first build.")
         include(ExternalProject)
         set(HDF5_IS_PARALLEL OFF)
@@ -20,8 +20,7 @@ if(NOT TARGET hdf5::hdf5)
                 -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                 -DCMAKE_BUILD_TYPE=Release
                 -DCMAKE_ANSI_CFLAGS:STRING=-fPIC
-                -DBUILD_SHARED_LIBS:BOOL=ON
-                -DBUILD_STATIC_LIBS:BOOL=ON
+                -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
                 -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
                 -DHDF5_ENABLE_PARALLEL=${HDF5_IS_PARALLEL}
                 -DALLOW_UNSUPPORTED=ON

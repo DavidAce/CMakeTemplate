@@ -12,7 +12,7 @@ option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                          
 option(ENABLE_TESTS       "Enable testing"                                                                  ON )
 option(ENABLE_SPDLOG      "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        OFF)
 option(ENABLE_H5PP        "Use h5pp, a C++ front-end to HDF5"                                               OFF)
-option(DOWNLOAD_LIBS      "Download enabled libraries that aren't found"                                    OFF)
+option(DOWNLOAD_MISSING   "Download enabled libraries that aren't found"                                    OFF)
 option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              OFF)
 
 
