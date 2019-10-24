@@ -276,7 +276,7 @@ if (TARGET spdlog::spdlog AND ENABLE_SPDLOG)
     target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 endif()
 
-if (TARGET h5pp::h5pp AND ENABLE_H5PP)
+if (TARGET h5pp::h5pp AND TARGET h5pp::deps AND ENABLE_H5PP)
     target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
 endif()
 
@@ -293,7 +293,7 @@ if(TARGET spdlog::spdlog AND ENABLE_SPDLOG)
     get_target_property(SPDLOG_INFO         spdlog::spdlog   INTERFACE_INCLUDE_DIRECTORIES)
 endif()
 
-if(TARGET h5pp::h5pp AND ENABLE_H5PP)
+if(TARGET h5pp::h5pp AND TARGET h5pp::deps AND ENABLE_H5PP)
     get_target_property(H5PP_INFO_INC         h5pp::h5pp   INTERFACE_INCLUDE_DIRECTORIES)
     get_target_property(H5PP_DEPS_LIB         h5pp::deps   INTERFACE_LINK_LIBRARIES)
 endif()
