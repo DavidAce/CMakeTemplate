@@ -10,6 +10,8 @@ Usage            : $PROGNAME [-option <argument>]
 -b <build type>  : Build type: [ Release | RelWithDebInfo | Debug | Profile ]  (default = Release)
 -c               : Clear CMake files before build (delete ./build)
 -d               : Dry run
+-D               : Download all libraries and dependencies [ ON | OFF ] (default = OFF)
+-f <"flags">     : Extra compiler flags
 -h               : Help. Shows this text.
 -j <num_threads> : Number of threads used by CMake (default = 8)
 -l <lib name>    : Clear library before build (i.e. delete ./libs/<lib name> and ./cmake-build-libs/<lib name>)
@@ -33,13 +35,15 @@ omp="OFF"
 shared="OFF"
 make_threads=8
 clear_libs=""
-
-while getopts a:b:cdg:hj:l:Lo:p:s:t: o; do
+download_deps="OFF"
+while getopts a:b:cdDf:g:hj:l:Lo:p:s:t: o; do
     case $o in
 	    (a) march=$OPTARG;;
         (b) build=$OPTARG;;
         (c) clear_cmake="true";;
         (d) dryrun="true";;
+        (D) download_deps="ON";;
+        (f) flags=$OPTARG;;
         (h) usage;;
         (j) make_threads=$OPTARG;;
         (l) clear_lib+=("$OPTARG");;
@@ -79,6 +83,7 @@ echo "Micro arch.     :   $march"
 echo "Target          :   $target"
 echo "Build threads   :   $make_threads"
 echo "Build Type      :   $build"
+echo "Download deps   :   $download_deps"
 echo "OpenMP          :   $omp"
 echo "Shared build    :   $shared"
 echo "gcc toolchain   :   $gcc_toolchain"
@@ -100,6 +105,15 @@ echo ">> cmake --build . --target $target -- -j $make_threads"
 if [ -z "$dryrun" ] ;then
     cmake -E make_directory build/$build
     cd build/$build
-    cmake -DCMAKE_BUILD_TYPE=$build -DMARCH=$march  -DENABLE_OPENMP=$omp  -DBUILD_SHARED_LIBS=$shared -DGCC_TOOLCHAIN=$gcc_toolchain  -G "CodeBlocks - Unix Makefiles" ../../
+    cmake   -DCMAKE_BUILD_TYPE=$build \
+            -DMARCH=$march \
+            -DENABLE_OPENMP=$omp \
+            -DENABLE_SPDLOG=$download_deps \
+            -DENABLE_H5PP=$download_deps \
+            -DDOWNLOAD_LIBS=$download_deps \
+            -DBUILD_SHARED_LIBS=$shared \
+            -DGCC_TOOLCHAIN=$gcc_toolchain \
+            $flags \
+            -G "CodeBlocks - Unix Makefiles" ../../
     cmake --build . --target $target -- -j $make_threads
 fi

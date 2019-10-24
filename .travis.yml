@@ -80,12 +80,11 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
-  - ./build.sh -j 2 -c -L  -s OFF -o OFF -DOWNLOAD_LIBS=OFF -DENABLE_SPDLOG:BOOL=OFF -DENABLE_H5PP:BOOL=OFF
-  - ./build.sh -j 2 -c -L  -s OFF -o OFF -DENABLE_SPDLOG:BOOL=OFF -DENABLE_H5PP:BOOL=OFF
-  - ./build.sh -j 2 -c -L  -s OFF -o OFF -DENABLE_H5PP:BOOL=OFF
+  - ./build.sh -j 2 -c -L  -s OFF -o OFF
+  - ./build.sh -j 2 -c -L  -s OFF -o OFF -D
   - ./build.sh -j 2
-  - ./build.sh -j 2 -c  -s ON -o ON
-  - ./build.sh -j 2 -c  -s OFF -o ON
+  - ./build.sh -j 2 -c  -s ON -o ON -D
+  - ./build.sh -j 2 -c  -s OFF -o ON -D
 
 
 
