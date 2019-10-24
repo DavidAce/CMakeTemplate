@@ -33,7 +33,7 @@ else()
             -DEIGEN3_INCLUDE_DIR:PATH=${EIGEN3_INCLUDE_DIR}
             -Dspdlog_DIR:PATH=${spdlog_DIR}
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-            DEPENDS hdf5 spdlog::spdlog Eigen3::Eigen
+            DEPENDS hdf5::hdf5 spdlog::spdlog Eigen3::Eigen
             )
 
     ExternalProject_Get_Property(external_H5PP INSTALL_DIR)
