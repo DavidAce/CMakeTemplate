@@ -60,7 +60,7 @@ if(NOT TARGET hdf5::hdf5)
         )
 
     else()
-        message("WARNING: Dependency HDF5 not found and DOWNLOAD_ALL is OFF. Build will fail.")
+        message("WARNING: Dependency HDF5 not found and DOWNLOAD_MISSING is OFF. Build will fail.")
     endif()
 
 endif()

@@ -24,7 +24,7 @@ else()
             CMAKE_ARGS
             -DCMAKE_BUILD_TYPE=Release
             -DENABLE_TESTS:BOOL=OFF
-            -DDOWNLOAD_ALL:BOOL=OFF
+            -DDOWNLOAD_MISSING:BOOL=OFF
             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
             -DHDF5_DIR:PATH=${HDF5_DIR}
             -DHDF5_ROOT:PATH=${HDF5_DIR}
@@ -33,7 +33,7 @@ else()
             -DEIGEN3_INCLUDE_DIR:PATH=${EIGEN3_INCLUDE_DIR}
             -Dspdlog_DIR:PATH=${spdlog_DIR}
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-            DEPENDS hdf5::hdf5 spdlog::spdlog Eigen3::Eigen
+            DEPENDS  spdlog::spdlog Eigen3::Eigen hdf5::hdf5
             )
 
     ExternalProject_Get_Property(external_H5PP INSTALL_DIR)
