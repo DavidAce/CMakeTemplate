@@ -1,4 +1,4 @@
-project(name-of-my-project CXX)
+project(default-name CXX)
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -245,16 +245,21 @@ target_link_libraries(${PROJECT_NAME} PUBLIC project-settings)
 
 
 
+##################################################################
+### Setup dependency paths                                     ###
+##################################################################
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/libs" CACHE PATH "..." FORCE)
+endif()
 
-##################################################################
-### Find or fetch all dependencies                             ###
-##################################################################
-if(NOT BUILD_DIRECTORY)
-    set(BUILD_DIRECTORY   ${PROJECT_SOURCE_DIR}/cmake-build-libs)
+include(GNUInstallDirs)
+if(THIRD_PARTY_DIR)
+    set(INSTALL_DIR_THIRD_PARTY       ${THIRD_PARTY_DIR})
+else()
+    set(INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX})
 endif()
-if(NOT INSTALL_DIRECTORY)
-    set(INSTALL_DIRECTORY ${PROJECT_SOURCE_DIR}/libs)
-endif()
+set(BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
+set(CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
 
 if (ENABLE_SPDLOG)
     include(cmake-modules/Fetch_spdlog.cmake)
