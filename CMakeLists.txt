@@ -1,4 +1,4 @@
-project(default-name CXX)
+project(CMakeTemplate CXX)
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -8,13 +8,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
+option(DISABLE_TESTING    "Disable  CTest testing"                                                          OFF)
 option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                                                      OFF)
-option(ENABLE_TESTS       "Enable testing"                                                                  ON )
+option(ENABLE_EIGEN3      "Use Eigen3 Library. Guide with -DEIGEN_INCLUDE_DIR:PATH=<dir-to-eigen3>"         OFF)
 option(ENABLE_SPDLOG      "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        OFF)
 option(ENABLE_H5PP        "Use h5pp, a C++ front-end to HDF5"                                               OFF)
-option(DOWNLOAD_MISSING   "Download enabled libraries that aren't found"                                    OFF)
 option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              OFF)
+option(DOWNLOAD_MISSING   "Download enabled libraries that aren't found"                                    OFF)
 
+
+#################################################################
+### h5pp includes eigen as a dependency                       ###
+#################################################################
+if(ENABLE_H5PP)
+    message(STATUS "Eigen3 is included with h5pp -- disabling standalone Eigen3")
+    set(ENABLE_EIGEN3 OFF)
+endif()
 
 #################################################################
 ### Set default policies if CMake is new enough               ###
@@ -24,9 +33,9 @@ if (CMAKE_VERSION VERSION_LESS 3.12)
 else()
     cmake_policy(SET CMP0074 NEW)
     cmake_policy(SET CMP0075 NEW)
-    # Use cmake_policy CMP0067 to let try_compile honor current CMAKE_CXX_STANDARD setting.
-    # See here https://stackoverflow.com/questions/47213356/cmake-using-corrext-c-standard-when-checking-for-header-files
-    cmake_policy(SET CMP0067 NEW)
+#    # Use cmake_policy CMP0067 to let try_compile honor current CMAKE_CXX_STANDARD setting.
+#    # See here https://stackoverflow.com/questions/47213356/cmake-using-corrext-c-standard-when-checking-for-header-files
+#    cmake_policy(SET CMP0067 NEW)
 endif()
 
 
@@ -43,18 +52,7 @@ include(cmake-modules/gitversion.cmake)
 ##################################################################
 ### Print operating system details                          ###
 ##################################################################
-cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-set(GET_OS_INFO_CMD lsb_release -a)
-if(${CMAKE_HOST_APPLE})
-    set(GET_OS_INFO_CMD "sw_vers")
-endif()
-execute_process(COMMAND ${GET_OS_INFO_CMD}
-        OUTPUT_VARIABLE OS_DETAILS
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("========= DETECTED OS =========")
-message("Hostname: " ${_host_name})
-message("${OS_DETAILS}")
-message("===============================")
+include(cmake-modules/PrintHostInfo.cmake)
 
 ##################################################################
 ### Print compiler details                                     ###
@@ -73,17 +71,16 @@ add_library(project-settings INTERFACE)
 ##################################################################
 ### Setup compiler flags                                       ###
 ##################################################################
-
 if(NOT MARCH)
     set(MARCH "native")
 endif()
-
 message("Using microarchitechture: ${MARCH}")
 set(COMMON_OPTIONS            -g -Wall -Wpedantic -Wextra  -march=${MARCH} -mtune=${MARCH})
 set(DEBUG_OPTIONS             -O0 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2)
 set(RELWITHDEBINFO_OPTIONS    -O1 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2)
 set(RELEASE_OPTIONS           -O3 -DNDEBUG )
 set(PROFILE_OPTIONS           -O3 -DNDEBUG  -lprofiler -g  -ftime-report)
+
 
 ##################################################################
 ### OS-dependent compiler flags                                ###
@@ -140,18 +137,10 @@ target_compile_features(project-settings INTERFACE cxx_std_17)
 target_compile_options(project-settings INTERFACE -std=c++17)
 
 
-##################################################################
-### Check that experimental headers are present                ###
-##################################################################
-include(cmake-modules/CheckExperimentalHeaders.cmake)
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    set(TEST_REQUIRED_FLAGS     "-std=c++17 -lstdc++fs" )
-    set(TEST_REQUIRED_LIBRARIES "")
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(TEST_REQUIRED_FLAGS     "-stdlib=libstdc++ -lstdc++fs -std=c++17 ${GCC_TOOLCHAIN}" )
-    set(TEST_REQUIRED_LIBRARIES "-stdlib=libstdc++ -lstdc++fs -std=c++17")
-endif()
-CheckExperimentalHeaders("${TEST_REQUIRED_FLAGS}" "${TEST_REQUIRED_LIBRARIES}")
+######################################
+###  Check  C++17 compiles         ###
+######################################
+include(cmake-modules/CheckCXX17Compiles.cmake)
 
 
 ##################################################################
@@ -269,6 +258,10 @@ if (ENABLE_H5PP)
     include(cmake-modules/Fetch_h5pp.cmake)
 endif()
 
+if (ENABLE_EIGEN3)
+    include(cmake-modules/Fetch_Eigen3.cmake)
+endif()
+
 
 
 ##################################################################
@@ -303,6 +296,9 @@ if(TARGET h5pp::h5pp AND TARGET h5pp::deps AND ENABLE_H5PP)
     get_target_property(H5PP_DEPS_LIB         h5pp::deps   INTERFACE_LINK_LIBRARIES)
 endif()
 
+if(TARGET Eigen3::Eigen AND ENABLE_EIGEN3)
+    get_target_property(EIGEN3_INCLUDE_DIR    Eigen3::Eigen   INTERFACE_INCLUDE_DIRECTORIES)
+endif()
 
 
 ##################################################################
@@ -318,6 +314,10 @@ if(ENABLE_H5PP)
 message("=============================================================================")
 message("    H5PP           INC:  ${H5PP_INFO_INC}")
 message("                   DEP:  ${H5PP_DEPS_LIB}")
+endif()
+if(ENABLE_EIGEN3)
+message("=============================================================================")
+message("    EIGEN3         INC:  ${EIGEN3_INCLUDE_DIR}")
 endif()
 message("=============================================================================")
 message("")
@@ -343,7 +343,7 @@ message("")
 ##################################################################
 ### Unit testing runs before the main project builds           ###
 ##################################################################
-if(ENABLE_TESTS)
+if(NOT DISABLE_TESTING)
     enable_testing()
 
     # Set up a target "all-tests" which will contain all the tests.
@@ -357,11 +357,14 @@ if(ENABLE_TESTS)
         add_subdirectory(tests/h5pp EXCLUDE_FROM_ALL)
         add_dependencies(all-tests test-h5pp)  #Make sure the test gets built after main project
     endif()
+    if(ENABLE_EIGEN3 OR ENABLE_H5PP)
+        add_subdirectory(tests/eigen3 EXCLUDE_FROM_ALL)
+        add_dependencies(all-tests test-eigen3)  #Make sure the test gets built after main project
+    endif()
     if(ENABLE_OPENMP)
         add_subdirectory(tests/openmp EXCLUDE_FROM_ALL)
         add_dependencies(all-tests test-openmp)  #Make sure the test gets built after main project
     endif()
-
     #Run all tests as soon as the tests have been built
     add_custom_command(TARGET all-tests
             POST_BUILD

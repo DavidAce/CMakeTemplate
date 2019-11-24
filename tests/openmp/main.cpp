@@ -10,6 +10,7 @@
 #endif
 
 
+
 int main(){
     auto std_threads = std::thread::hardware_concurrency();
     auto omp_threads = omp_get_max_threads();
