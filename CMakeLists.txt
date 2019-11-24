@@ -23,6 +23,7 @@ option(DOWNLOAD_MISSING   "Download enabled libraries that aren't found"        
 if(ENABLE_H5PP)
     message(STATUS "Eigen3 is included with h5pp -- disabling standalone Eigen3")
     set(ENABLE_EIGEN3 OFF)
+    set(ENABLE_SPDLOG OFF)
 endif()
 
 #################################################################
@@ -349,13 +350,13 @@ if(NOT DISABLE_TESTING)
     # Set up a target "all-tests" which will contain all the tests.
     add_custom_target(all-tests)
     # Add the all the tests to all-tests
-    if(ENABLE_SPDLOG)
-        add_subdirectory(tests/spdlog EXCLUDE_FROM_ALL)
-        add_dependencies(all-tests test-spdlog)  #Make sure the test gets built after main project
-    endif()
     if(ENABLE_H5PP)
         add_subdirectory(tests/h5pp EXCLUDE_FROM_ALL)
         add_dependencies(all-tests test-h5pp)  #Make sure the test gets built after main project
+    endif()
+    if(ENABLE_SPDLOG OR ENABLE_H5PP)
+        add_subdirectory(tests/spdlog EXCLUDE_FROM_ALL)
+        add_dependencies(all-tests test-spdlog)  #Make sure the test gets built after main project
     endif()
     if(ENABLE_EIGEN3 OR ENABLE_H5PP)
         add_subdirectory(tests/eigen3 EXCLUDE_FROM_ALL)

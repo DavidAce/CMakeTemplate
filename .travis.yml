@@ -81,11 +81,12 @@ before_install:
 
 script:
   - ./build.sh -j 2
-  - ./build.sh -j 2 -c -L -s OFF -o OFF
-  - ./build.sh -j 2 -c -L -s OFF -o OFF -D
-  - ./build.sh -j 2 -c    -s OFF -o OFF -D
-  - ./build.sh -j 2 -c -L -s ON -o ON -D
-  - ./build.sh -j 2 -c    -s ON -o ON -D
+  - ./build.sh -j 2 -c  --enable-shared
+  - ./build.sh -j 2 -c  --enable-shared --with-openmp
+  - ./build.sh -j 2 -c  --with-openmp
+  - ./build.sh -j 2 -c  --with-eigen3
+  - ./build.sh -j 2 -c  --with-eigen3 --with-h5pp --with-spdlog
+
 
 
 
