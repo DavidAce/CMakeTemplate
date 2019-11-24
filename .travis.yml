@@ -64,8 +64,9 @@ script:
   - ./build.sh -j 2 -c  --enable-shared
   - ./build.sh -j 2 -c  --enable-shared --with-openmp
   - ./build.sh -j 2 -c  --with-openmp
-  - ./build.sh -j 2 -c  --with-eigen3
-  - ./build.sh -j 2 -c  --with-eigen3 --with-h5pp --with-spdlog
+  - ./build.sh -j 2 -c  --with-eigen3 --download-missing
+  - ./build.sh -j 2 -c  --with-eigen3 --with-h5pp --with-spdlog --download-missing
+  - ./build.sh -j 2 -c  --with-openmp --with-eigen3 --with-h5pp --with-spdlog --download-missing
 
 
 
