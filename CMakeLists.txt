@@ -1,5 +1,5 @@
 project(CMakeTemplate CXX)
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
@@ -8,17 +8,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(DISABLE_TESTING    "Disable  CTest testing"                                                          OFF)
-option(BUILD_SHARED_LIBS  "Sets shared linking on/off"                                                      OFF)
-option(ENABLE_EIGEN3      "Use Eigen3 Library. Guide with -DEIGEN_INCLUDE_DIR:PATH=<dir-to-eigen3>"         OFF)
-option(ENABLE_SPDLOG      "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        OFF)
-option(ENABLE_H5PP        "Use h5pp, a C++ front-end to HDF5"                                               OFF)
-option(ENABLE_OPENMP      "Enable parallelization with OpenMP"                                              OFF)
-option(DOWNLOAD_MISSING   "Download enabled libraries that aren't found"                                    OFF)
-
+option(ENABLE_TESTS                 "Enables CTest testing"                                                           OFF)
+option(ENABLE_TESTS_POST_BUILD      "Enables CTest testing directly after main build step (implies ENABLE_TESTS:ON)"  OFF)
+option(BUILD_SHARED_LIBS            "Sets shared linking on/off"                                                      OFF)
+option(ENABLE_EIGEN3                "Use Eigen3 Library. Guide with -DEIGEN_INCLUDE_DIR:PATH=<dir-to-eigen3>"         OFF)
+option(ENABLE_SPDLOG                "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        OFF)
+option(ENABLE_H5PP                  "Use h5pp, a C++ front-end to HDF5"                                               OFF)
+option(ENABLE_OPENMP                "Enable OpenMP flags such as -fopenmp"                                            OFF)
+option(DOWNLOAD_MISSING             "Download enabled libraries that aren't found"                                    OFF)
+#option(RECOMMENDED_COMPILER_FLAGS   "Apply recommended compiler flags"                                                OFF)
 
 #################################################################
-### h5pp includes eigen as a dependency                       ###
+### h5pp includes eigen and spdlog as a dependencies          ###
 #################################################################
 if(ENABLE_H5PP)
     message(STATUS "Eigen3 is included with h5pp -- disabling standalone Eigen3")
@@ -27,24 +28,28 @@ if(ENABLE_H5PP)
 endif()
 
 #################################################################
-### Set default policies if CMake is new enough               ###
+### To do automatic tests after build, tests need to be on    ###
 #################################################################
-if (CMAKE_VERSION VERSION_LESS 3.12)
-    message(STATUS "Not setting policies")
-else()
-    cmake_policy(SET CMP0074 NEW)
-    cmake_policy(SET CMP0075 NEW)
-#    # Use cmake_policy CMP0067 to let try_compile honor current CMAKE_CXX_STANDARD setting.
-#    # See here https://stackoverflow.com/questions/47213356/cmake-using-corrext-c-standard-when-checking-for-header-files
-#    cmake_policy(SET CMP0067 NEW)
+if(ENABLE_TESTS_POST_BUILD)
+    set(ENABLE_TESTS ON)
 endif()
+
+
+
+#################################################################
+### Set default policies if for CMake version >= 3.12         ###
+#################################################################
+cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0075 NEW)
+cmake_policy(SET CMP0067 NEW)
+
 
 
 ################################################################
 ### Get git version number                                   ###
 ### Generates a header gitversion/gitversion.h               ###
 ### Include it using #include <gitversion.h>                 ###
-### Gives a namespace GIT:: with several git version numbers.###
+### Gives a namespace GIT:: with several git identifiers     ###
 ################################################################
 include(cmake-modules/gitversion.cmake)
 
@@ -83,12 +88,6 @@ set(RELEASE_OPTIONS           -O3 -DNDEBUG )
 set(PROFILE_OPTIONS           -O3 -DNDEBUG  -lprofiler -g  -ftime-report)
 
 
-##################################################################
-### OS-dependent compiler flags                                ###
-##################################################################
-if(${CMAKE_HOST_APPLE})
-    list(APPEND COMMON_OPTIONS  -mmacosx-version-min=10.13)
-endif()
 
 
 ##################################################################
@@ -132,15 +131,9 @@ endif()
 
 
 ##################################################################
-### Enable c++17 support                                       ###
+### Enable c++17 support and check new headers compile         ###
 ##################################################################
 target_compile_features(project-settings INTERFACE cxx_std_17)
-target_compile_options(project-settings INTERFACE -std=c++17)
-
-
-######################################
-###  Check  C++17 compiles         ###
-######################################
 include(cmake-modules/CheckCXX17Compiles.cmake)
 
 
@@ -153,29 +146,6 @@ find_package(Threads)
 if(TARGET Threads::Threads AND NOT BUILD_SHARED_LIBS)
     set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
 endif()
-
-
-
-##################################################################
-###  Optional OpenMP support                                   ###
-###  Note that Clang has some trouble with static openmp       ###
-###  We can solve this by trying to use its omp.h header       ###
-###  linked together with intel omp library, libiomp5.a        ###
-##################################################################
-if(ENABLE_OPENMP)
-    include(cmake-modules/CheckOMPCompiles.cmake)
-    if(TARGET OpenMP)
-        message(STATUS "Enabling OpenMP")
-        target_link_libraries(project-settings INTERFACE OpenMP)
-    else()
-        message(STATUS "Disabling OpenMP -- Could not generate target OpenMP")
-        set(ENABLE_OPENMP OFF)
-        list(APPEND COMMON_OPTIONS -Wno-unknown-pragmas)
-    endif()
-endif()
-
-
-
 
 
 ##################################################################
@@ -194,45 +164,31 @@ target_include_directories(project-settings INTERFACE source)
 
 
 
-##################################################################
-### Print all flags                                            ###
-##################################################################
-    message(STATUS "COMMON CXX flags    : ${COMMON_OPTIONS} ${CMAKE_CXX_FLAGS}")
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "RELEASE CXX flags   : ${RELEASE_OPTIONS}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    message(STATUS "RELWITHDEBINFO  CXX flags: ${RELWITHDEBINFO_OPTIONS}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "DEBUG CXX flags     : ${DEBUG_OPTIONS}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Profile")
-    message(STATUS "PROFILE CXX flags   : ${PROFILE_OPTIONS}")
-endif()
-    message(STATUS "LINKER CXX flags    : ${COMPILER_LFLAGS}")
-
-get_target_property(SETTINGS_INFO_LIB   project-settings      INTERFACE_LINK_LIBRARIES)
-get_target_property(SETTINGS_INFO_INC   project-settings      INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(SETTINGS_INFO_OPT   project-settings      INTERFACE_COMPILE_OPTIONS)
-message(STATUS "Settings -- linker  : ${SETTINGS_INFO_LIB}")
-message(STATUS "Settings -- include : ${SETTINGS_INFO_INC}")
-message(STATUS "Settings -- flags   : ${SETTINGS_INFO_OPT}")
-
-
-
-
-
-##################################################################
+#################################################################
 ### Add all source files recursively                           ###
 ##################################################################
-file(GLOB_RECURSE SOURCES "source/*.cpp")
-file(GLOB_RECURSE HEADERS "source/*.h")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "source/*.cpp" )
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "source/*.h"  )
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 
 ##################################################################
-### Apply all settings to current project                      ###
+###  Optional OpenMP support                                   ###
+###  Note that Clang has some trouble with static openmp       ###
+###  We can solve this by trying to use its omp.h header       ###
+###  linked together with intel omp library, libiomp5.a        ###
 ##################################################################
-target_link_libraries(${PROJECT_NAME} PUBLIC project-settings)
-
+if(ENABLE_OPENMP)
+    include(cmake-modules/CheckOMPCompiles.cmake)
+    if(TARGET OpenMP)
+        message(STATUS "Enabling OpenMP")
+        target_link_libraries(project-settings INTERFACE OpenMP)
+    else()
+        message(STATUS "Disabling OpenMP -- Could not generate target OpenMP")
+        set(ENABLE_OPENMP OFF)
+        target_compile_options(project-settings INTERFACE -Wno-unknown-pragmas)
+    endif()
+endif()
 
 
 ##################################################################
@@ -251,6 +207,8 @@ endif()
 set(BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 set(CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
 
+
+
 if (ENABLE_SPDLOG)
     include(cmake-modules/Fetch_spdlog.cmake)
 endif()
@@ -264,12 +222,18 @@ if (ENABLE_EIGEN3)
 endif()
 
 
+##################################################################
+### Apply all settings to current project                      ###
+##################################################################
+target_link_libraries(${PROJECT_NAME} PUBLIC project-settings)
+
+
+
 
 ##################################################################
-### Link all generated targets for dependencies                ###
+### Link all generated targets to this project                 ###
 ##################################################################
 target_link_libraries(${PROJECT_NAME} PRIVATE ${COMPILER_LFLAGS})
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 if (TARGET spdlog::spdlog AND ENABLE_SPDLOG)
     target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
@@ -281,47 +245,31 @@ endif()
 
 
 ##################################################################
-### Print all generated targets for dependencies               ###
-##################################################################
-if(TARGET OpenMP AND ENABLE_OPENMP)
-    get_target_property(OMP_INFO_LIB   OpenMP            INTERFACE_LINK_LIBRARIES)
-    get_target_property(OMP_INFO_INC   OpenMP            INTERFACE_INCLUDE_DIRECTORIES)
-endif()
-
-if(TARGET spdlog::spdlog AND ENABLE_SPDLOG)
-    get_target_property(SPDLOG_INFO         spdlog::spdlog   INTERFACE_INCLUDE_DIRECTORIES)
-endif()
-
-if(TARGET h5pp::h5pp AND TARGET h5pp::deps AND ENABLE_H5PP)
-    get_target_property(H5PP_INFO_INC         h5pp::h5pp   INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(H5PP_DEPS_LIB         h5pp::deps   INTERFACE_LINK_LIBRARIES)
-endif()
-
-if(TARGET Eigen3::Eigen AND ENABLE_EIGEN3)
-    get_target_property(EIGEN3_INCLUDE_DIR    Eigen3::Eigen   INTERFACE_INCLUDE_DIRECTORIES)
-endif()
-
-
-##################################################################
 ### Print summary of CMake configuration                       ###
 ##################################################################
-message("=============================================================================")
-message("=== SUMMARY OF CMAKE CONFIGURATION:  THE FOLLOWING LIBRARIES WILL BE USED ===")
-if(ENABLE_SPDLOG)
-message("=============================================================================")
-message("    SPDLOG         INC:  ${SPDLOG_INFO}")
+if(ENABLE_OPENMP OR ENABLE_SPDLOG OR ENABLE_H5PP OR ENABLE_EIGEN3)
+        message("=============================================================================")
+        message("===                  SUMMARY OF CMAKE CONFIGURATION                       ===")
+        message("=============================================================================")
+        include(cmake-modules/PrintTargetInfo.cmake)
+        print_target_info(spdlog::spdlog)
+        print_target_info(Eigen3::Eigen)
+        print_target_info(h5pp::h5pp)
+        print_target_info(h5pp::deps)
+        print_target_info(OpenMP)
+        print_target_info(project-settings)
+        message("=============================================================================")
+    message("")
 endif()
-if(ENABLE_H5PP)
-message("=============================================================================")
-message("    H5PP           INC:  ${H5PP_INFO_INC}")
-message("                   DEP:  ${H5PP_DEPS_LIB}")
-endif()
-if(ENABLE_EIGEN3)
-message("=============================================================================")
-message("    EIGEN3         INC:  ${EIGEN3_INCLUDE_DIR}")
-endif()
-message("=============================================================================")
-message("")
+
+
+
+
+##################################################################
+### Unit testing                                               ###
+##################################################################
+include(tests/all-tests.cmake)
+
 
 
 ##################################################################
@@ -330,54 +278,10 @@ message("")
 message("")
 message("=============================================================================")
 message("")
-message("      To clean cmake files, run './build.sh -c'")
-message("      To clean all downloaded libraries, run './build.sh -L '")
-message("      To clean specific libraries, run './build.sh -l <libname> '")
-message("      For more info, run ./build.sh -h '")
+message("      To clean cmake files, run './build.sh --clear-cmake'")
+message("      To clean downloaded libraries, run './build.sh --clear-libs=all '")
+message("      For more info, run ./build.sh --help '")
 message("")
 message("=============================================================================")
 message("")
-
-
-
-
-##################################################################
-### Unit testing runs before the main project builds           ###
-##################################################################
-if(NOT DISABLE_TESTING)
-    enable_testing()
-
-    # Set up a target "all-tests" which will contain all the tests.
-    add_custom_target(all-tests)
-    # Add the all the tests to all-tests
-    if(ENABLE_H5PP)
-        add_subdirectory(tests/h5pp EXCLUDE_FROM_ALL)
-        add_dependencies(all-tests test-h5pp)  #Make sure the test gets built after main project
-    endif()
-    if(ENABLE_SPDLOG OR ENABLE_H5PP)
-        add_subdirectory(tests/spdlog EXCLUDE_FROM_ALL)
-        add_dependencies(all-tests test-spdlog)  #Make sure the test gets built after main project
-    endif()
-    if(ENABLE_EIGEN3 OR ENABLE_H5PP)
-        add_subdirectory(tests/eigen3 EXCLUDE_FROM_ALL)
-        add_dependencies(all-tests test-eigen3)  #Make sure the test gets built after main project
-    endif()
-    if(ENABLE_OPENMP)
-        add_subdirectory(tests/openmp EXCLUDE_FROM_ALL)
-        add_dependencies(all-tests test-openmp)  #Make sure the test gets built after main project
-    endif()
-    #Run all tests as soon as the tests have been built
-    add_custom_command(TARGET all-tests
-            POST_BUILD
-            COMMENT "Running Tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
-
-    # Make sure the tests are built and run before building the main project
-    add_dependencies(${PROJECT_NAME} all-tests)
-endif()
-
-
-
-
 

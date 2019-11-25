@@ -14,7 +14,7 @@ A template for building C++17 projects using **modern** CMake with optional soft
 - C++ compiler with C++17 support. Tested with
     - GNU GCC version >= 8,
     - LLVM Clang version >= 7
-- CMake version 3.10 or above.
+- CMake version 3.12 or above.
 
 
 ## Usage

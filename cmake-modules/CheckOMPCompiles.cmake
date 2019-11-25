@@ -55,16 +55,12 @@ function(check_omp_compiles REQUIRED_FLAGS REQUIRED_LIBRARIES_UNPARSED REQUIRED_
     set(CMAKE_REQUIRED_FLAGS     "${REQUIRED_FLAGS}" )
     set(CMAKE_REQUIRED_LIBRARIES "${REQUIRED_LIBRARIES}")
     set(CMAKE_REQUIRED_INCLUDES  "${REQUIRED_INCLUDES}")
-#    message(STATUS "REQFLAG: ${CMAKE_REQUIRED_FLAGS}")
-#    message(STATUS "REQLIBS: ${CMAKE_REQUIRED_LIBRARIES}")
-#    message(STATUS "REQINCS: ${CMAKE_REQUIRED_INCLUDES}")
 
     unset(has_omp_h)
     unset(has_omp_h CACHE)
     unset(OMP_COMPILES CACHE)
     unset(OMP_COMPILES)
-    #    include(CheckIncludeFile)
-    #    check_include_file("omp.h" has_omp_h LANGUAGE CXX)
+
     check_include_file_cxx(omp.h    has_omp_h)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
@@ -112,11 +108,6 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
 
 
         find_path(OpenMP_INCLUDE_DIR NAMES omp.h PATHS ${OpenMP_HEADER_PATHS} ${omp_paths} PATH_SUFFIXES openmp include)
-#        message(STATUS "OpenMP_ROOT         : ${OpenMP_ROOT} ")
-#        message(STATUS "OpenMP_HEADER_PATHS : ${OpenMP_HEADER_PATHS} ")
-#        message(STATUS "OpenMP_LIBRARIES    : ${OpenMP_LIBRARIES} ")
-#        message(STATUS "OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
-
         list(APPEND OpenMP_LIBRARIES  Threads::Threads -ldl)
         message(STATUS "OpenMP libraries found: ${OpenMP_LIBRARIES}" )
         if(BUILD_SHARED_LIBS)
@@ -130,14 +121,12 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
 
     if(NOT OMP_COMPILES)
         message(STATUS "Checking for OpenMP in given paths: ${omp_paths}")
-        #        unset(OpenMP_INCLUDE_DIR)
-        #        unset(OpenMP_INCLUDE_DIR CACHE)
+
         unset(OpenMP_FOUND)
         unset(OpenMP_FOUND CACHE)
         unset(OpenMP_LIBRARIES)
         unset(OpenMP_LIBRARIES CACHE)
-        #        unset(OpenMP_FLAGS)
-        #        unset(OpenMP_FLAGS CACHE)
+
 
         find_library(OpenMP_LIBRARIES NAMES ${omp_names} PATHS ${omp_paths})
         find_path(OpenMP_INCLUDE_DIR NAMES omp.h PATHS ${OpenMP_HEADER_PATHS} ${omp_paths} /usr/lib  /usr/lib/llvm-9/include /usr/include /usr/lib/llvm-8/include PATH_SUFFIXES openmp include)
@@ -154,19 +143,9 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
             message("OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
         endif()
     endif()
-    #    get_cmake_property(_variableNames VARIABLES)
-    #    foreach (_variableName ${_variableNames})
-    #        if("${_variableName}" MATCHES "OpenMP"
-    #                OR "${_variableName}" MATCHES "openmp")
-    #            message(STATUS "${_variableName}=${${_variableName}}")
-    #        endif()
-    #    endforeach()
 
     if(OMP_COMPILES)
-        message(STATUS "Found OpenMP" )
-        message(STATUS "OpenMP_LIBRARIES    : ${OpenMP_LIBRARIES} ")
-        message(STATUS "OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
-        message(STATUS "OpenMP_FLAGS        : ${OpenMP_FLAGS} ")
+        message(STATUS "OpenMP found" )
         set(OpenMP_FOUND        TRUE                    PARENT_SCOPE)
         set(OpenMP_LIBRARIES    ${OpenMP_LIBRARIES}     PARENT_SCOPE)
         set(OpenMP_INCLUDE_DIR  ${OpenMP_INCLUDE_DIR}   PARENT_SCOPE)
@@ -184,10 +163,6 @@ endfunction()
 
 unset(OMP_HEADERTEST)
 unset(OMP_HEADERTEST CACHE)
-
-#find_path(OMP_HEADERTEST NAMES omp.h PATHS /usr/lib  /usr/lib/llvm-9/include /usr/include /usr/lib/llvm-8/include  PATH_SUFFIXES openmp include REQUIRED)
-#message(STATUS "OMP_HEADERTEST: ${OMP_HEADERTEST}")
-
 
 set(OMP_LIBRARY_NAMES)
 set(OMP_LIBRARY_PATHS)
@@ -223,8 +198,3 @@ if (OpenMP_FOUND)
     target_include_directories(OpenMP INTERFACE ${OpenMP_INCLUDE_DIR})
 endif()
 
-
-#add_library(OpenMP INTERFACE)
-#target_link_libraries(OpenMP INTERFACE /opt/intel/lib/intel64/libiomp5.a)
-#target_compile_options(OpenMP INTERFACE "")
-#target_include_directories(OpenMP INTERFACE /usr/lib/llvm-8/lib/clang/8.0.1/include/omp.h)
