@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/DavidAce/CMakeTemplates.svg?branch=cpp-cmake)](https://travis-ci.org/DavidAce/CMakeTemplates)
+[![Build Status](https://travis-ci.org/DavidAce/CMakeTemplate.svg?branch=cpp-cmake)](https://travis-ci.org/DavidAce/CMakeTemplate)
 # CMake Template
 A template for building C++17 projects using **modern** CMake with optional software packages. 
 
