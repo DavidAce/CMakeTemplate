@@ -20,6 +20,9 @@ Usage            : $PROGNAME [-option | --option ] <=argument>
    | --with-spdlog              : Enable Spdlog logging library
    | --with-eigen3              : Enable Eigen3 linear algebra library
    | --with-h5pp                : Enable h5pp, an HDF5 wrapper for C++
+-t | --build-target [=args]     : Select build target [ CMakeTemplate | all-tests | test-<name> ]  (default = none)
+   | --enable-tests             : Enable CTest tests
+-T | --enable-tests-post-build  : Run CTest testing after build
 EXAMPLE:
 ./build.sh --arch native -b Release  --make-threads 8   --enable-shared  --with-openmp --with-eigen3  --download-missing
 EOF
@@ -37,7 +40,8 @@ PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st:T \
                 clear-cmake\
                 clear-libs:\
                 dry-run\
-                disable-testing\
+                enable-tests\
+                enable-tests-post-build\
                 enable-shared\
                 gcc-toolchain:\
                 make-threads:\
@@ -59,7 +63,8 @@ build_type="Release"
 march=""
 shared="OFF"
 download_missing="OFF"
-disable_testing="OFF"
+enable_tests="OFF"
+enable_tests_post_build="OFF"
 build_target="all"
 make_threads=8
 # Now goes through all the options with a case and using shift to analyse 1 argument at a time.
@@ -68,24 +73,25 @@ echo "Build Configuration"
 while true;
 do
   case "$1" in
-    -h|--help)                                  usage                                         ; shift   ;;
-    -a|--arch)              march=$2              ; echo " * Architecture          : $2"      ; shift 2 ;;
-    -b|--build-type)        build_type=$2         ; echo " * Build type            : $2"      ; shift 2 ;;
-    -c|--clear-cmake)       clear_cmake="ON"      ; echo " * Clear CMake           : ON"      ; shift   ;;
+    -h|--help)                      usage                                                                       ; shift   ;;
+    -a|--arch)                      march=$2                        ; echo " * Architecture             : $2"      ; shift 2 ;;
+    -b|--build-type)                build_type=$2                   ; echo " * Build type               : $2"      ; shift 2 ;;
+    -c|--clear-cmake)               clear_cmake="ON"                ; echo " * Clear CMake              : ON"      ; shift   ;;
     -l|--clear-libs)
-            clear_libs=($(echo "$2" | tr ',' ' ')); echo " * Clear libraries       : $2"      ; shift 2 ;;
-    -d|--dry-run)           dryrun="ON"           ; echo " * Dry run               : ON"      ; shift   ;;
-    -f|--extra-flags)       extra_flags=$2        ; echo " * Extra CMake flags     : $2"      ; shift 2 ;;
-    -g|--gcc-toolchain)     gcc_toolchain=$2      ; echo " * GCC toolchain         : $2"      ; shift 2 ;;
-    -j|--make-threads)      make_threads=$2       ; echo " * MAKE threads          : $2"      ; shift 2 ;;
-    -s|--enable-shared)     shared="ON"           ; echo " * Link shared libraries : ON"      ; shift   ;;
-    -T|--disable-testing)   disable_testing="OFF" ; echo " * CTest Testing         : OFF"     ; shift   ;;
-    -t|--build-target)      build_target=$2       ; echo " * Build target          : $2"      ; shift 2 ;;
-       --download-missing)  download_missing="ON" ; echo " * Download missing libs : ON"      ; shift   ;;
-       --with-openmp)       with_openmp="ON"      ; echo " * With OpenMP           : ON"      ; shift   ;;
-       --with-spdlog)       with_spdlog="ON"      ; echo " * With Spdlog           : ON"      ; shift   ;;
-       --with-eigen3)       with_eigen3="ON"      ; echo " * With Eigen3           : ON"      ; shift   ;;
-       --with-h5pp)         with_h5pp="ON"        ; echo " * With h5pp             : ON"      ; shift   ;;
+            clear_libs=($(echo "$2" | tr ',' ' '))                  ; echo " * Clear libraries          : $2"      ; shift 2 ;;
+    -d|--dry-run)                   dryrun="ON"                     ; echo " * Dry run                  : ON"      ; shift   ;;
+    -f|--extra-flags)               extra_flags=$2                  ; echo " * Extra CMake flags        : $2"      ; shift 2 ;;
+    -g|--gcc-toolchain)             gcc_toolchain=$2                ; echo " * GCC toolchain            : $2"      ; shift 2 ;;
+    -j|--make-threads)              make_threads=$2                 ; echo " * MAKE threads             : $2"      ; shift 2 ;;
+    -s|--enable-shared)             shared="ON"                     ; echo " * Link shared libraries    : ON"      ; shift   ;;
+       --enable-tests)              enable_tests="ON"               ; echo " * CTest Testing            : ON"      ; shift   ;;
+    -T|--enable-tests-post-build)   enable_tests_post_build="ON"    ; echo " * CTest Testing post build : ON"      ; shift   ;;
+    -t|--build-target)              build_target=$2                 ; echo " * Build target             : $2"      ; shift 2 ;;
+       --download-missing)          download_missing="ON"           ; echo " * Download missing libs    : ON"      ; shift   ;;
+       --with-openmp)               with_openmp="ON"                ; echo " * With OpenMP              : ON"      ; shift   ;;
+       --with-spdlog)               with_spdlog="ON"                ; echo " * With Spdlog              : ON"      ; shift   ;;
+       --with-eigen3)               with_eigen3="ON"                ; echo " * With Eigen3              : ON"      ; shift   ;;
+       --with-h5pp)                 with_h5pp="ON"                  ; echo " * With h5pp                : ON"      ; shift   ;;
     --) shift; echo ""; break;;
   esac
 done
@@ -133,7 +139,8 @@ Running script:
             -DENABLE_OPENMP=$with_openmp
             -DENABLE_SPDLOG=$with_spdlog
             -DENABLE_H5PP=$with_h5pp
-            -DDISABLE_TESTING=$disable_testing
+            -DENABLE_TESTS=$enable_tests
+            -DENABLE_TESTS_POST_BUILD=$enable_tests_post_build
             -DDOWNLOAD_MISSING=$download_missing
             -DBUILD_SHARED_LIBS=$shared
             -DGCC_TOOLCHAIN=$gcc_toolchain
@@ -153,7 +160,8 @@ if [ -z "$dryrun" ] ;then
             -DENABLE_SPDLOG=$with_spdlog \
             -DENABLE_EIGEN3=$with_eigen3\
             -DENABLE_H5PP=$with_h5pp\
-            -DDISABLE_TESTING=$disable_testing\
+            -DENABLE_TESTS=$enable_tests \
+            -DENABLE_TESTS_POST_BUILD=$enable_tests_post_build \
             -DDOWNLOAD_MISSING=$download_missing \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
