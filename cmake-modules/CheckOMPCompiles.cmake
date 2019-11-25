@@ -55,9 +55,9 @@ function(check_omp_compiles REQUIRED_FLAGS REQUIRED_LIBRARIES_UNPARSED REQUIRED_
     set(CMAKE_REQUIRED_FLAGS     "${REQUIRED_FLAGS}" )
     set(CMAKE_REQUIRED_LIBRARIES "${REQUIRED_LIBRARIES}")
     set(CMAKE_REQUIRED_INCLUDES  "${REQUIRED_INCLUDES}")
-    message(STATUS "REQFLAG: ${CMAKE_REQUIRED_FLAGS}")
-    message(STATUS "REQLIBS: ${CMAKE_REQUIRED_LIBRARIES}")
-    message(STATUS "REQINCS: ${CMAKE_REQUIRED_INCLUDES}")
+#    message(STATUS "REQFLAG: ${CMAKE_REQUIRED_FLAGS}")
+#    message(STATUS "REQLIBS: ${CMAKE_REQUIRED_LIBRARIES}")
+#    message(STATUS "REQINCS: ${CMAKE_REQUIRED_INCLUDES}")
 
     unset(has_omp_h)
     unset(has_omp_h CACHE)
@@ -102,7 +102,7 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
     find_package(OpenMP)
     if (OpenMP_FOUND)
         include(cmake-modules/PrintTargetProperties.cmake)
-        print_target_properties(OpenMP::OpenMP_CXX)
+        #print_target_properties(OpenMP::OpenMP_CXX)
         set(OpenMP_LIBRARIES  ${OpenMP_gomp_LIBRARY} ${OpenMP_omp_LIBRARY} ${OpenMP_iomp_LIBRARY})
         set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})
 
@@ -112,10 +112,10 @@ function(find_package_omp omp_paths omp_names BUILD_SHARED_LIBS )
 
 
         find_path(OpenMP_INCLUDE_DIR NAMES omp.h PATHS ${OpenMP_HEADER_PATHS} ${omp_paths} PATH_SUFFIXES openmp include)
-        message("OpenMP_ROOT         : ${OpenMP_ROOT} ")
-        message("OpenMP_HEADER_PATHS : ${OpenMP_HEADER_PATHS} ")
-        message("OpenMP_LIBRARIES    : ${OpenMP_LIBRARIES} ")
-        message("OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
+#        message(STATUS "OpenMP_ROOT         : ${OpenMP_ROOT} ")
+#        message(STATUS "OpenMP_HEADER_PATHS : ${OpenMP_HEADER_PATHS} ")
+#        message(STATUS "OpenMP_LIBRARIES    : ${OpenMP_LIBRARIES} ")
+#        message(STATUS "OpenMP_INCLUDE_DIR  : ${OpenMP_INCLUDE_DIR} ")
 
         list(APPEND OpenMP_LIBRARIES  Threads::Threads -ldl)
         message(STATUS "OpenMP libraries found: ${OpenMP_LIBRARIES}" )
@@ -185,9 +185,8 @@ endfunction()
 unset(OMP_HEADERTEST)
 unset(OMP_HEADERTEST CACHE)
 
-find_path(OMP_HEADERTEST NAMES omp.h PATHS /usr/lib  /usr/lib/llvm-9/include /usr/include /usr/lib/llvm-8/include  PATH_SUFFIXES openmp include REQUIRED)
-
-message(STATUS "OMP_HEADERTEST: ${OMP_HEADERTEST}")
+#find_path(OMP_HEADERTEST NAMES omp.h PATHS /usr/lib  /usr/lib/llvm-9/include /usr/include /usr/lib/llvm-8/include  PATH_SUFFIXES openmp include REQUIRED)
+#message(STATUS "OMP_HEADERTEST: ${OMP_HEADERTEST}")
 
 
 set(OMP_LIBRARY_NAMES)
