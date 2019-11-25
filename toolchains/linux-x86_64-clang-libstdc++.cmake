@@ -14,4 +14,3 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO    -O1 -g3 -fstack-protector -D_GLIBCXX_DEBUG
 #set(RELWITHDEBINFO_OPTIONS    -O1 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2)
 #set(RELEASE_OPTIONS           -O3 -DNDEBUG )
 #set(PROFILE_OPTIONS           -O3 -DNDEBUG  -lprofiler -g  -ftime-report)
-SET(CMAKE_C_FLAGS "-std=gnu99")

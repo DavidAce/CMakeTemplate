@@ -1,19 +1,19 @@
 
-find_package(h5pp PATHS ${INSTALL_DIR_THIRD_PARTY}/h5pp $ENV{H5PP_DIR})
+find_package(h5pp PATHS ${EXTERNAL_INSTALL_DIR}/h5pp $ENV{H5PP_DIR})
 
 if(h5pp_FOUND AND TARGET h5pp::h5pp)
     message(STATUS "h5pp found")
 elseif(DOWNLOAD_MISSING)
-    message(STATUS "h5pp will be installed into ${INSTALL_DIR_THIRD_PARTY}/h5pp")
+    message(STATUS "h5pp will be installed into ${EXTERNAL_INSTALL_DIR}/h5pp")
     include(cmake-modules/BuildExternalLibs.cmake)
     build_external_libs(
             "h5pp"
-            "${CONFIG_DIR_THIRD_PARTY}"
-            "${BUILD_DIR_THIRD_PARTY}"
-            "${INSTALL_DIR_THIRD_PARTY}"
+            "${EXTERNAL_CONFIG_DIR}"
+            "${EXTERNAL_BUILD_DIR}"
+            "${EXTERNAL_INSTALL_DIR}"
             "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
-    find_package(h5pp PATHS ${INSTALL_DIR_THIRD_PARTY}/h5pp $ENV{H5PP_DIR})
+    find_package(h5pp PATHS ${EXTERNAL_INSTALL_DIR}/h5pp $ENV{H5PP_DIR})
     if(h5pp_FOUND AND TARGET h5pp::h5pp)
         message(STATUS "h5pp installed successfully")
         else()

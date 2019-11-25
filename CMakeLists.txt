@@ -36,7 +36,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
 project(CMakeTemplate CXX)
 
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON) #Only use for debugging
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 
@@ -229,13 +229,11 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 include(GNUInstallDirs)
-if(THIRD_PARTY_DIR)
-    set(INSTALL_DIR_THIRD_PARTY       ${THIRD_PARTY_DIR})
-else()
-    set(INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX})
+if(NOT EXTERNAL_INSTALL_DIR)
+    set(EXTERNAL_INSTALL_DIR   ${CMAKE_INSTALL_PREFIX})
 endif()
-set(BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
-set(CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
+set(EXTERNAL_BUILD_DIR         ${CMAKE_BINARY_DIR}/external-build)
+set(EXTERNAL_CONFIG_DIR        ${CMAKE_BINARY_DIR}/external-config)
 
 ##################################################################
 ### Fetch or find enabled dependencies                         ###
