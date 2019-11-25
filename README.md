@@ -37,7 +37,8 @@ Type `./build.sh -h` to see how to enable/disable more options.
 - Enable h5pp HDF5-wrapper library for C++     `-D ENABLE_H5PP:BOOL=ON/OFF`          (default `OFF`)
     - Note: h5pp includes HDF5, Eigen3 and spdlog 
 - Download missing libraries                   `-D DOWNLOAD_MISSING:BOOL=ON/OFF`     (default `OFF`)
-- Disable testing (ctest)                      `-D DISABLE_TESTING:BOOL=ON/OFF`      (default `OFF`)
+- Enable testing (ctest)                       `-D ENABLE_TESTS:BOOL=ON/OFF`         (default `OFF`)
+- Enable testing directly after build          `-D ENABLE_TESTS_POST_BUILD:BOOL=ON/OFF`         (default `OFF`)
 - Enable OpenMP                                `-D ENABLE_OPENMP:BOOL=ON/OFF`        (default `OFF`)
 - Shared/static linking                        `-D BUILD_SHARED_LIBS:BOOL=ON/OFF`    (default `OFF`)
 - Compile architecture                         `-D MARCH=<arch>`                     (default `native`)
