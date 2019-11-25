@@ -147,7 +147,6 @@ endif()
 ##################################################################
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
     target_link_libraries(project-settings INTERFACE -lstdc++fs)  ### For experimental::filesystem
-#    target_link_libraries(project-settings INTERFACE -flto) ### Link time optimization flag
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_link_libraries(project-settings INTERFACE -stdlib=libstdc++)  ### Because libc++ isn't up to speed...
     target_link_libraries(project-settings INTERFACE -lstdc++fs)         ### For experimental::filesystem
@@ -188,6 +187,21 @@ target_include_directories(${PROJECT_NAME} INTERFACE source)
 target_include_directories(project-settings INTERFACE source)
 
 
+
+##################################################################
+### Check if we can enable Link Time Optimization              ###
+##################################################################
+include(CheckIPOSupported)
+check_ipo_supported(RESULT supported OUTPUT error)
+if(supported)
+    message(STATUS "IPO / LTO supported, enabling")
+    set_target_properties(${PROJECT_NAME} PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
+else()
+    message(STATUS "IPO / LTO not supported: <${error}>, will not enable")
+endif()
+
+
+
 ##################################################################
 ###  Optional OpenMP support                                   ###
 ###  Note that Clang has some trouble with static openmp       ###
@@ -223,7 +237,9 @@ endif()
 set(BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 set(CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
 
-
+##################################################################
+### Fetch or find enabled dependencies                         ###
+##################################################################
 
 if (ENABLE_SPDLOG)
     include(cmake-modules/Fetch_spdlog.cmake)
