@@ -1,7 +1,42 @@
-project(CMakeTemplate CXX)
-cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+################################################################
+### Enforce an out-of-source build, because c'mon...         ###
+################################################################
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(STATUS "CMakeTemplate requires an out-of-source build.")
+    message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
+    message(STATUS "CMakeCache.txt")
+    message(STATUS "CMakeFiles")
+    message(STATUS "Once these files are removed, create a separate directory")
+    message(STATUS "and run CMake from there")
+    message(FATAL_ERROR "in-source build detected")
+endif()
+################################################################
+### Enforce an out-of-source build, because c'mon...         ###
+################################################################
+
+#################################################################
+### Set CMake version and policies for version >= 3.12        ###
+#################################################################
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0075 NEW)
+cmake_policy(SET CMP0067 NEW)
+
+#################################################################
+### Set default flags. Override these with CMAKE_CXX_FLAGS_*  ###
+#################################################################
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+        ${CMAKE_SOURCE_DIR}/cmake-modules/UserMakeRulesOverride.cxx.cmake)
+
+#################################################################
+### Setup project name and language                           ###
+#################################################################
+project(CMakeTemplate CXX)
+
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 
@@ -16,7 +51,6 @@ option(ENABLE_SPDLOG                "Use SpdLog logging library. Guide with -Dsp
 option(ENABLE_H5PP                  "Use h5pp, a C++ front-end to HDF5"                                               OFF)
 option(ENABLE_OPENMP                "Enable OpenMP flags such as -fopenmp"                                            OFF)
 option(DOWNLOAD_MISSING             "Download enabled libraries that aren't found"                                    OFF)
-#option(RECOMMENDED_COMPILER_FLAGS   "Apply recommended compiler flags"                                                OFF)
 
 #################################################################
 ### h5pp includes eigen and spdlog as a dependencies          ###
@@ -35,13 +69,6 @@ if(ENABLE_TESTS_POST_BUILD)
 endif()
 
 
-
-#################################################################
-### Set default policies if for CMake version >= 3.12         ###
-#################################################################
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0075 NEW)
-cmake_policy(SET CMP0067 NEW)
 
 
 
@@ -77,16 +104,15 @@ add_library(project-settings INTERFACE)
 ##################################################################
 ### Setup compiler flags                                       ###
 ##################################################################
-if(NOT MARCH)
-    set(MARCH "native")
-endif()
-message("Using microarchitechture: ${MARCH}")
-set(COMMON_OPTIONS            -g -Wall -Wpedantic -Wextra  -march=${MARCH} -mtune=${MARCH})
-set(DEBUG_OPTIONS             -O0 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2)
-set(RELWITHDEBINFO_OPTIONS    -O1 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2)
-set(RELEASE_OPTIONS           -O3 -DNDEBUG )
-set(PROFILE_OPTIONS           -O3 -DNDEBUG  -lprofiler -g  -ftime-report)
-
+#if(NOT MARCH)
+#    set(MARCH "native")
+#endif()
+#message("Using microarchitechture: ${MARCH}")
+#set(COMMON_OPTIONS                      -g   -march=${MARCH} -mtune=${MARCH})
+set(CMAKE_CXX_FLAGS_DEBUG          "-O0 -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2 -Wall -Wpedantic -Wextra")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O1 -march=native -mtune=native -g3 -fstack-protector -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2 -Wall -Wpedantic -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE        "-O3 -march=native -mtune=native -DNDEBUG ")
+#
 
 
 
@@ -106,14 +132,13 @@ endif()
 ##################################################################
 ### Setup static/shared build and library suffixes (.a/.so)    ###
 ##################################################################
-set(COMPILER_LFLAGS)
 if(BUILD_SHARED_LIBS)
     set(CUSTOM_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${CUSTOM_SUFFIX} ${CMAKE_FIND_LIBRARY_SUFFIXES})
 else()
     set(CUSTOM_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${CUSTOM_SUFFIX} ${CMAKE_FIND_LIBRARY_SUFFIXES})
-    list(APPEND COMPILER_LFLAGS -static)        ### Static linkage
+    target_link_libraries(project-settings INTERFACE -static)
 endif()
 
 
@@ -121,11 +146,11 @@ endif()
 ### Compiler-dependent linker flags                            ###
 ##################################################################
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    list(APPEND COMPILER_LFLAGS -lstdc++fs)     ### For experimental::filesystem
-    list(APPEND COMPILER_LFLAGS -flto)          ### Link time optimization flag
+    target_link_libraries(project-settings INTERFACE -lstdc++fs)  ### For experimental::filesystem
+#    target_link_libraries(project-settings INTERFACE -flto) ### Link time optimization flag
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    list(APPEND COMPILER_LFLAGS -stdlib=libstdc++)
-    list(APPEND COMPILER_LFLAGS -lstdc++fs)        ### For experimental::filesystem
+    target_link_libraries(project-settings INTERFACE -stdlib=libstdc++)  ### Because libc++ isn't up to speed...
+    target_link_libraries(project-settings INTERFACE -lstdc++fs)         ### For experimental::filesystem
 endif()
 
 
@@ -148,18 +173,7 @@ if(TARGET Threads::Threads AND NOT BUILD_SHARED_LIBS)
 endif()
 
 
-##################################################################
-### Apply all settings to helper target                        ###
-##################################################################
-target_compile_options (project-settings INTERFACE
-        ${COMMON_OPTIONS}
-        "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>"
-        "$<$<CONFIG:RELWITHDEBINFO>:${RELWITHDEBINFO_OPTIONS}>"
-        "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>"
-        "$<$<CONFIG:PROFILE>:${PROFILE_OPTIONS}>"
-        )
-target_link_libraries(project-settings INTERFACE ${COMPILER_LFLAGS})
-target_include_directories(project-settings INTERFACE source)
+
 
 
 
@@ -170,6 +184,8 @@ target_include_directories(project-settings INTERFACE source)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "source/*.cpp" )
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "source/*.h"  )
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+target_include_directories(${PROJECT_NAME} INTERFACE source)
+target_include_directories(project-settings INTERFACE source)
 
 
 ##################################################################
@@ -233,7 +249,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC project-settings)
 ##################################################################
 ### Link all generated targets to this project                 ###
 ##################################################################
-target_link_libraries(${PROJECT_NAME} PRIVATE ${COMPILER_LFLAGS})
 
 if (TARGET spdlog::spdlog AND ENABLE_SPDLOG)
     target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
@@ -258,6 +273,7 @@ if(ENABLE_OPENMP OR ENABLE_SPDLOG OR ENABLE_H5PP OR ENABLE_EIGEN3)
         print_target_info(h5pp::deps)
         print_target_info(OpenMP)
         print_target_info(project-settings)
+#        print_target_info(${PROJECT_NAME})
         message("=============================================================================")
     message("")
 endif()
