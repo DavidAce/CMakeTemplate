@@ -51,6 +51,9 @@ option(ENABLE_SPDLOG                "Use SpdLog logging library. Guide with -Dsp
 option(ENABLE_H5PP                  "Use h5pp, a C++ front-end to HDF5"                                               OFF)
 option(ENABLE_OPENMP                "Enable OpenMP flags such as -fopenmp"                                            OFF)
 option(DOWNLOAD_MISSING             "Download enabled libraries that aren't found"                                    OFF)
+option(DOWNLOAD_METHOD_CMAKE        "Download missing libraries using CMake ExternalProjectAdd"                       ON)
+option(DOWNLOAD_METHOD_CONAN        "Download missing libraries using Conan package manager"                          OFF)
+option(ENABLE_CONANFILE             "Install software via the conan-modules/conanfile.txt"                            OFF)
 
 #################################################################
 ### h5pp includes eigen and spdlog as a dependencies          ###
@@ -69,10 +72,23 @@ if(ENABLE_TESTS_POST_BUILD)
 endif()
 
 
+if(ENABLE_EIGEN3 OR ENABLE_SPDLOG)
+    if(ENABLE_CONANFILE)
+        message(FATAL_ERROR "ENABLE_<lib> is incompatible with ENABLE_CONANFILE")
+    endif()
+endif()
+#################################################################
+### Initialize conan if enabled                               ###
+#################################################################
+if(DOWNLOAD_METHOD_CONAN)
+    include(conan-modules/conan.cmake)
+endif()
 
 
 
-################################################################
+
+
+    ################################################################
 ### Get git version number                                   ###
 ### Generates a header gitversion/gitversion.h               ###
 ### Include it using #include <gitversion.h>                 ###
@@ -235,27 +251,45 @@ endif()
 set(EXTERNAL_BUILD_DIR         ${CMAKE_BINARY_DIR}/external-build)
 set(EXTERNAL_CONFIG_DIR        ${CMAKE_BINARY_DIR}/external-config)
 
+
+
+##################################################################
+### Install conan-modules/conanfile.txt dependencies           ###
+##################################################################
+
+
+
+if(ENABLE_CONANFILE)
+    message(WARNING "Using conanfile is still experimental.\n Manually edit this file if linking fails")
+    include(conan-modules/conan.cmake)
+    conan_cmake_run(CONANFILE conan-modules/conanfile.txt
+            BASIC_SETUP CMAKE_TARGETS
+            BUILD missing)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${CONAN_TARGETS})
+endif()
+
+
 ##################################################################
 ### Fetch or find enabled dependencies                         ###
 ##################################################################
-
 if (ENABLE_SPDLOG)
     include(cmake-modules/Fetch_spdlog.cmake)
+endif()
+if (ENABLE_EIGEN3)
+    include(cmake-modules/Fetch_Eigen3.cmake)
 endif()
 
 if (ENABLE_H5PP)
     include(cmake-modules/Fetch_h5pp.cmake)
 endif()
 
-if (ENABLE_EIGEN3)
-    include(cmake-modules/Fetch_Eigen3.cmake)
-endif()
 
 
 ##################################################################
 ### Apply all settings to current project                      ###
 ##################################################################
 target_link_libraries(${PROJECT_NAME} PUBLIC project-settings)
+
 
 
 
@@ -273,6 +307,8 @@ if (TARGET h5pp::h5pp AND TARGET h5pp::deps AND ENABLE_H5PP)
 endif()
 
 
+
+
 ##################################################################
 ### Print summary of CMake configuration                       ###
 ##################################################################
@@ -287,7 +323,7 @@ if(ENABLE_OPENMP OR ENABLE_SPDLOG OR ENABLE_H5PP OR ENABLE_EIGEN3)
         print_target_info(h5pp::deps)
         print_target_info(OpenMP)
         print_target_info(project-settings)
-#        print_target_info(${PROJECT_NAME})
+        print_target_info(${PROJECT_NAME})
         message("=============================================================================")
     message("")
 endif()
