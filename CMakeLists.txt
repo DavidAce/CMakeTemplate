@@ -196,9 +196,7 @@ endif()
 #################################################################
 ### Add all source files recursively                           ###
 ##################################################################
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "source/*.cpp" )
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "source/*.h"  )
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} source/main.cpp )
 target_include_directories(${PROJECT_NAME} INTERFACE source)
 target_include_directories(project-settings INTERFACE source)
 
