@@ -5,7 +5,7 @@ A template for building C++ projects using **modern** CMake with automated (but 
 
 This template has two main purposes. 
 1) To speed up the process of deploying a new C++ project with a selection of 
-optional libraries that.
+optional libraries.
 2) Serve as a base for learning CMake. I believe that automating dependencies as shown here is a good way to showcase many aspects of CMake.
  
 The optional packages are:
