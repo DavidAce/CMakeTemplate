@@ -61,12 +61,12 @@ before_install:
 
 script:
   - ./build.sh -j 2
-  - ./build.sh -j 2 -c  --enable-tests-post-build --enable-shared
-  - ./build.sh -j 2 -c  --enable-tests-post-build --enable-shared --with-openmp
-  - ./build.sh -j 2 -c  --enable-tests-post-build --with-openmp
-  - ./build.sh -j 2 -c  --enable-tests-post-build --with-eigen3 --download-missing
-  - ./build.sh -j 2 -c  --enable-tests-post-build --with-eigen3 --with-h5pp --with-spdlog --download-missing
-  - ./build.sh -j 2 -c  --enable-tests-post-build --with-openmp --with-eigen3 --with-h5pp --with-spdlog --download-missing
+  - ./build.sh -j 2 -c  --enable-tests --enable-shared
+  - ./build.sh -j 2 -c  --enable-tests --enable-shared --with-openmp
+  - ./build.sh -j 2 -c  --enable-tests --with-openmp
+  - ./build.sh -j 2 -c  --enable-tests --with-eigen3 --download-missing
+  - ./build.sh -j 2 -c  --enable-tests --with-eigen3 --with-h5pp --with-spdlog --download-missing
+  - ./build.sh -j 2 -c  --enable-tests --with-openmp --with-eigen3 --with-h5pp --with-spdlog --download-missing
 
 
 
