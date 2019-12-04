@@ -10,7 +10,7 @@ if(TARGET Eigen3::Eigen)
 elseif (DOWNLOAD_MISSING)
     # We get the package for the user
     if(DOWNLOAD_METHOD_CMAKE)
-        message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
+        message(STATUS "Eigen3 will be installed into ${CMAKE_BINARY_DIR}/deps-install/Eigen3")
         include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
         build_dependency(Eigen3 "")
         find_package(Eigen3 3.3.4

@@ -7,11 +7,11 @@ find_package(spdlog 1.3
 if(NOT TARGET spdlog::spdlog)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS})
+            PATHS /usr /usr/local ${spdlog_DIR} ${CMAKE_INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/deps-install)
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
-            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS} ${SPDLOG_INCLUDE_DIR})
+            PATHS /usr /usr/local ${spdlog_DIR} ${CMAKE_INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/deps-install ${SPDLOG_INCLUDE_DIR})
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
         set(spdlog_FOUND TRUE)
         add_library(spdlog::spdlog INTERFACE IMPORTED)
@@ -27,12 +27,12 @@ if(TARGET spdlog::spdlog)
 
 elseif (DOWNLOAD_MISSING)
     if(DOWNLOAD_METHOD_CMAKE)
-        message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
+        message(STATUS "Spdlog will be installed into ${CMAKE_BINARY_DIR}/deps-install/spdlog")
         include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
         build_dependency(spdlog "")
         find_package(spdlog 1.3
                 PATHS  ${spdlog_DIR} ${CMAKE_INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/deps-install
-                PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
+                PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
                 NO_DEFAULT_PATH NO_CMAKE_PACKAGE_REGISTRY )
 
     elseif(DOWNLOAD_METHOD_CONAN)

@@ -105,10 +105,10 @@ fi
 for lib in "${clear_libs[@]}"; do
     if [[ "$lib" == "all" ]]; then
         echo "Clearing all installed libraries"
-        rm -r ./libs/* ./cmake-build-libs/*
+        rm -r ./build/$build_type/deps-build/* ./build/$build_type/deps-install/*
     else
         echo "Clearing library: $lib"
-        rm -r ./libs/$lib ./cmake-build-libs/$lib
+        rm -r ./build/$build_type/deps-build/$lib ./build/$build_type/deps-install/$lib
     fi
 done
 
