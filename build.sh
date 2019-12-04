@@ -22,7 +22,6 @@ Usage            : $PROGNAME [-option | --option ] <=argument>
    | --with-h5pp                : Enable h5pp, an HDF5 wrapper for C++
 -t | --build-target [=args]     : Select build target [ CMakeTemplate | all-tests | test-<name> ]  (default = none)
    | --enable-tests             : Enable CTest tests
--T | --enable-tests-post-build  : Run CTest testing after build
 EXAMPLE:
 ./build.sh --arch native -b Release  --make-threads 8   --enable-shared  --with-openmp --with-eigen3  --download-missing
 EOF
@@ -31,7 +30,7 @@ EOF
 
 
 # Execute getopt on the arguments passed to this program, identified by the special character $@
-PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st:T \
+PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st: \
                 --long "\
                 help\
                 arch:\
@@ -41,7 +40,6 @@ PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st:T \
                 clear-libs:\
                 dry-run\
                 enable-tests\
-                enable-tests-post-build\
                 enable-shared\
                 gcc-toolchain:\
                 make-threads:\
@@ -85,7 +83,6 @@ do
     -j|--make-threads)              make_threads=$2                 ; echo " * MAKE threads             : $2"      ; shift 2 ;;
     -s|--enable-shared)             shared="ON"                     ; echo " * Link shared libraries    : ON"      ; shift   ;;
        --enable-tests)              enable_tests="ON"               ; echo " * CTest Testing            : ON"      ; shift   ;;
-    -T|--enable-tests-post-build)   enable_tests_post_build="ON"    ; echo " * CTest Testing post build : ON"      ; shift   ;;
     -t|--build-target)              build_target=$2                 ; echo " * Build target             : $2"      ; shift 2 ;;
        --download-missing)          download_missing="ON"           ; echo " * Download missing libs    : ON"      ; shift   ;;
        --with-openmp)               with_openmp="ON"                ; echo " * With OpenMP              : ON"      ; shift   ;;
@@ -140,7 +137,6 @@ Running script:
             -DENABLE_SPDLOG=$with_spdlog
             -DENABLE_H5PP=$with_h5pp
             -DENABLE_TESTS=$enable_tests
-            -DENABLE_TESTS_POST_BUILD=$enable_tests_post_build
             -DDOWNLOAD_MISSING=$download_missing
             -DBUILD_SHARED_LIBS=$shared
             -DGCC_TOOLCHAIN=$gcc_toolchain
@@ -161,7 +157,6 @@ if [ -z "$dryrun" ] ;then
             -DENABLE_EIGEN3=$with_eigen3\
             -DENABLE_H5PP=$with_h5pp\
             -DENABLE_TESTS=$enable_tests \
-            -DENABLE_TESTS_POST_BUILD=$enable_tests_post_build \
             -DDOWNLOAD_MISSING=$download_missing \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
