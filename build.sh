@@ -20,23 +20,22 @@ Usage            : $PROGNAME [-option | --option ] <=argument>
    | --enable-spdlog            : Enable Spdlog logging library
    | --enable-eigen3            : Enable Eigen3 linear algebra library
    | --enable-h5pp              : Enable h5pp, an HDF5 wrapper for C++
--t | --build-target [=args]     : Select build target [ CMakeTemplate | all-tests | test-<name> ]  (default = none)
+-t | --target [=args]           : Select CMake build target [ CMakeTemplate | test-<name> ]  (default = none)
    | --enable-tests             : Enable CTest tests
 -v | --verbose                  : Verbose makefiles
 EXAMPLE:
-./build.sh --arch native -b Release  --make-threads 8   --enable-shared  --enable-openmp --enable-eigen3  --download-method=native
+./build.sh -b Release  --make-threads 8   --enable-shared  --enable-openmp --enable-eigen3  --download-method=native
 EOF
   exit 1
 }
 
 
 # Execute getopt on the arguments passed to this program, identified by the special character $@
-PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st:v \
+PARSED_OPTIONS=$(getopt -n "$0"   -o hb:cl:df:g:j:st:v \
                 --long "\
                 help\
-                arch:\
                 build-type:\
-                build-target:\
+                target:\
                 clear-cmake\
                 clear-libs:\
                 dry-run\
@@ -60,12 +59,10 @@ if [ $? -ne 0 ]; then exit 1 ; fi
 eval set -- "$PARSED_OPTIONS"
 
 build_type="Release"
-march=""
 shared="OFF"
 download_method="native"
 enable_tests="OFF"
-enable_tests_post_build="OFF"
-build_target="all"
+target="all"
 make_threads=8
 verbose="OFF"
 # Now goes through all the options with a case and using shift to analyse 1 argument at a time.
@@ -75,7 +72,6 @@ while true;
 do
   case "$1" in
     -h|--help)                      usage                                                                       ; shift   ;;
-    -a|--arch)                      march=$2                        ; echo " * Architecture             : $2"      ; shift 2 ;;
     -b|--build-type)                build_type=$2                   ; echo " * Build type               : $2"      ; shift 2 ;;
     -c|--clear-cmake)               clear_cmake="ON"                ; echo " * Clear CMake              : ON"      ; shift   ;;
     -l|--clear-libs)
@@ -87,7 +83,7 @@ do
     -j|--make-threads)              make_threads=$2                 ; echo " * MAKE threads             : $2"      ; shift 2 ;;
     -s|--enable-shared)             shared="ON"                     ; echo " * Link shared libraries    : ON"      ; shift   ;;
        --enable-tests)              enable_tests="ON"               ; echo " * CTest Testing            : ON"      ; shift   ;;
-    -t|--build-target)              build_target=$2                 ; echo " * Build target             : $2"      ; shift 2 ;;
+    -t|--target)                    target=$2                       ; echo " * CMake build target       : $2"      ; shift 2 ;;
        --enable-openmp)             enable_openmp="ON"              ; echo " * Enable OpenMP            : ON"      ; shift   ;;
        --enable-spdlog)             enable_spdlog="ON"              ; echo " * Enable Spdlog            : ON"      ; shift   ;;
        --enable-eigen3)             enable_eigen3="ON"              ; echo " * Enable Eigen3            : ON"      ; shift   ;;
@@ -100,7 +96,6 @@ done
 
 
 
-if  [ -n "$clear_cmake" ] ; then
 if  [ -n "$clear_cmake" ] ; then
     echo "Clearing CMake files from build."
 	rm -rf ./build/$build_type
@@ -139,7 +134,6 @@ Running script:
     cmake -E make_directory build/$build_type
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type
-            -DMARCH=$march
             -DDOWNLOAD_METHOD=$download_method
             -DENABLE_OPENMP=$enable_openmp
             -DENABLE_SPDLOG=$enable_spdlog
@@ -150,7 +144,7 @@ Running script:
             -DCMAKE_VERBOSE_MAKEFILE=$verbose
             $extra_flags
             -G "CodeBlocks - Unix Makefiles" ../../
-    cmake --build . --target $build_target -- -j $make_threads
+    cmake --build . --target $target -- -j $make_threads
 ===============================================================
 EOF
 
@@ -159,7 +153,6 @@ if [ -z "$dryrun" ] ;then
     cmake -E make_directory build/$build_type
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type \
-            -DMARCH=$march \
             -DDOWNLOAD_METHOD=$download_method \
             -DENABLE_OPENMP=$enable_openmp \
             -DENABLE_SPDLOG=$enable_spdlog \
@@ -171,7 +164,7 @@ if [ -z "$dryrun" ] ;then
             -DCMAKE_VERBOSE_MAKEFILE=$verbose \
             $extra_flags \
             -G "CodeBlocks - Unix Makefiles" ../../
-    cmake --build . --target $build_target -- -j $make_threads
+    cmake --build . --target $target -- -j $make_threads
 fi
 
 if [ "$enable_tests" = "ON" ] ;then
