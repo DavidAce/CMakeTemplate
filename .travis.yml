@@ -64,7 +64,7 @@ script:
   - ./build.sh -j 2 -c  --enable-tests --enable-shared
   - ./build.sh -j 2 -c  --enable-tests --enable-shared --enable-openmp
   - ./build.sh -j 2 -c  --enable-tests --enable-openmp
-  - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --download-missing
+  - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --download-method=native
   - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --enable-h5pp --enable-spdlog --download-method=native
   - ./build.sh -j 2 -c  --enable-tests --enable-openmp --enable-eigen3 --enable-h5pp --enable-spdlog --download-native
   - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --enable-h5pp --enable-spdlog --download-method=conan
