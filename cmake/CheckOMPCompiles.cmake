@@ -1,6 +1,6 @@
 function(check_omp_compiles REQUIRED_FLAGS REQUIRED_LIBRARIES_UNPARSED REQUIRED_INCLUDES)
     include(CheckIncludeFileCXX)
-    include(cmake-modules/getExpandedTarget.cmake)
+    include(cmake/getExpandedTarget.cmake)
     expand_target_libs("${REQUIRED_LIBRARIES_UNPARSED}" expanded_libs)
     expand_target_incs("${REQUIRED_LIBRARIES_UNPARSED}" expanded_incs)
     expand_target_opts("${REQUIRED_LIBRARIES_UNPARSED}" expanded_opts)

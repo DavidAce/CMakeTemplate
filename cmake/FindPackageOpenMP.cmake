@@ -1,10 +1,10 @@
 function(find_package_openmp_internal omp_paths omp_names BUILD_SHARED_LIBS )
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckOMPCompiles.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake/CheckOMPCompiles.cmake)
     # Start by trying to find it using the normal methods
     # find_package(OpenMP) Will at least find the correct header?
     find_package(OpenMP)
     if (OpenMP_FOUND)
-      include(cmake-modules/PrintTargetProperties.cmake)
+      include(cmake/PrintTargetProperties.cmake)
       #print_target_properties(OpenMP::OpenMP_CXX)
       set(OpenMP_LIBRARIES  ${OpenMP_gomp_LIBRARY} ${OpenMP_omp_LIBRARY} ${OpenMP_iomp_LIBRARY})
       set(OpenMP_FLAGS ${OpenMP_CXX_FLAGS})

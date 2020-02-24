@@ -62,12 +62,13 @@ before_install:
 script:
   - ./build.sh -j 2
   - ./build.sh -j 2 -c  --enable-tests --enable-shared
-  - ./build.sh -j 2 -c  --enable-tests --enable-shared --with-openmp
-  - ./build.sh -j 2 -c  --enable-tests --with-openmp
-  - ./build.sh -j 2 -c  --enable-tests --with-eigen3 --download-missing
-  - ./build.sh -j 2 -c  --enable-tests --with-eigen3 --with-h5pp --with-spdlog --download-missing
-  - ./build.sh -j 2 -c  --enable-tests --with-openmp --with-eigen3 --with-h5pp --with-spdlog --download-missing
-
+  - ./build.sh -j 2 -c  --enable-tests --enable-shared --enable-openmp
+  - ./build.sh -j 2 -c  --enable-tests --enable-openmp
+  - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --download-missing
+  - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --enable-h5pp --enable-spdlog --download-method=native
+  - ./build.sh -j 2 -c  --enable-tests --enable-openmp --enable-eigen3 --enable-h5pp --enable-spdlog --download-native
+  - ./build.sh -j 2 -c  --enable-tests --enable-eigen3 --enable-h5pp --enable-spdlog --download-method=conan
+  - ./build.sh -j 2 -c  --enable-tests --enable-openmp --enable-eigen3 --enable-h5pp --enable-spdlog --download-conan
 
 
 

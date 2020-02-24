@@ -9,28 +9,29 @@ Usage            : $PROGNAME [-option | --option ] <=argument>
 -b | --build-type [=arg]        : Build type: [ Release | RelWithDebInfo | Debug | Profile ]  (default = Release)
 -c | --clear-cmake              : Clear CMake files before build (delete ./build)
 -d | --dry-run                  : Dry run
-   | --download-missing         : Download missing libraries [ ON | OFF ] (default = OFF)
+   | --download-method          : Download libraries using [ native | conan ] (default = native)
 -f | --extra-flags [=arg]       : Extra CMake flags (defailt = none)
 -g | --gcc-toolchain [=arg]     : Path to GCC toolchain. Use with Clang if it can't find stdlib (defailt = none)
 -h | --help                     : Help. Shows this text.
 -j | --make-threads [=num]      : Number of threads used by Make build (default = 8)
 -l | --clear-libs [=args]       : Clear libraries in comma separated list 'lib1,lib2...'. "all" deletes all.
 -s | --enable-shared            : Enable shared library linking (default is static)
-   | --with-openmp              : Enable OpenMP
-   | --with-spdlog              : Enable Spdlog logging library
-   | --with-eigen3              : Enable Eigen3 linear algebra library
-   | --with-h5pp                : Enable h5pp, an HDF5 wrapper for C++
+   | --enable-openmp            : Enable OpenMP
+   | --enable-spdlog            : Enable Spdlog logging library
+   | --enable-eigen3            : Enable Eigen3 linear algebra library
+   | --enable-h5pp              : Enable h5pp, an HDF5 wrapper for C++
 -t | --build-target [=args]     : Select build target [ CMakeTemplate | all-tests | test-<name> ]  (default = none)
    | --enable-tests             : Enable CTest tests
+-v | --verbose                  : Verbose makefiles
 EXAMPLE:
-./build.sh --arch native -b Release  --make-threads 8   --enable-shared  --with-openmp --with-eigen3  --download-missing
+./build.sh --arch native -b Release  --make-threads 8   --enable-shared  --enable-openmp --enable-eigen3  --download-method=native
 EOF
   exit 1
 }
 
 
 # Execute getopt on the arguments passed to this program, identified by the special character $@
-PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st: \
+PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st:v \
                 --long "\
                 help\
                 arch:\
@@ -39,16 +40,17 @@ PARSED_OPTIONS=$(getopt -n "$0"   -o ha:b:cl:df:g:j:st: \
                 clear-cmake\
                 clear-libs:\
                 dry-run\
+                download-method:\
                 enable-tests\
                 enable-shared\
                 gcc-toolchain:\
                 make-threads:\
-                with-openmp\
-                with-spdlog\
-                with-eigen3\
-                with-h5pp\
-                download-missing\
+                enable-openmp\
+                enable-spdlog\
+                enable-eigen3\
+                enable-h5pp\
                 extra-flags:\
+                verbose\
                 "  -- "$@")
 
 #Bad arguments, something has gone wrong with the getopt command.
@@ -60,11 +62,12 @@ eval set -- "$PARSED_OPTIONS"
 build_type="Release"
 march=""
 shared="OFF"
-download_missing="OFF"
+download_method="native"
 enable_tests="OFF"
 enable_tests_post_build="OFF"
 build_target="all"
 make_threads=8
+verbose="OFF"
 # Now goes through all the options with a case and using shift to analyse 1 argument at a time.
 #$1 identifies the first argument, and when we use shift we discard the first argument, so $2 becomes $1 and goes again through the case.
 echo "Build Configuration"
@@ -78,17 +81,18 @@ do
     -l|--clear-libs)
             clear_libs=($(echo "$2" | tr ',' ' '))                  ; echo " * Clear libraries          : $2"      ; shift 2 ;;
     -d|--dry-run)                   dryrun="ON"                     ; echo " * Dry run                  : ON"      ; shift   ;;
+       --download-method)           download_method=$2              ; echo " * Download method          : $2"      ; shift 2 ;;
     -f|--extra-flags)               extra_flags=$2                  ; echo " * Extra CMake flags        : $2"      ; shift 2 ;;
     -g|--gcc-toolchain)             gcc_toolchain=$2                ; echo " * GCC toolchain            : $2"      ; shift 2 ;;
     -j|--make-threads)              make_threads=$2                 ; echo " * MAKE threads             : $2"      ; shift 2 ;;
     -s|--enable-shared)             shared="ON"                     ; echo " * Link shared libraries    : ON"      ; shift   ;;
        --enable-tests)              enable_tests="ON"               ; echo " * CTest Testing            : ON"      ; shift   ;;
     -t|--build-target)              build_target=$2                 ; echo " * Build target             : $2"      ; shift 2 ;;
-       --download-missing)          download_missing="ON"           ; echo " * Download missing libs    : ON"      ; shift   ;;
-       --with-openmp)               with_openmp="ON"                ; echo " * With OpenMP              : ON"      ; shift   ;;
-       --with-spdlog)               with_spdlog="ON"                ; echo " * With Spdlog              : ON"      ; shift   ;;
-       --with-eigen3)               with_eigen3="ON"                ; echo " * With Eigen3              : ON"      ; shift   ;;
-       --with-h5pp)                 with_h5pp="ON"                  ; echo " * With h5pp                : ON"      ; shift   ;;
+       --enable-openmp)             enable_openmp="ON"              ; echo " * Enable OpenMP            : ON"      ; shift   ;;
+       --enable-spdlog)             enable_spdlog="ON"              ; echo " * Enable Spdlog            : ON"      ; shift   ;;
+       --enable-eigen3)             enable_eigen3="ON"              ; echo " * Enable Eigen3            : ON"      ; shift   ;;
+       --enable-h5pp)               enable_h5pp="ON"                ; echo " * Enable h5pp              : ON"      ; shift   ;;
+    -v|--verbose)                   verbose="ON"                    ; echo " * Verbose makefiles        : ON"      ; shift   ;;
     --) shift; echo ""; break;;
   esac
 done
@@ -96,26 +100,29 @@ done
 
 
 
-if [ -n "$clear_cmake" ] ; then
+if  [ -n "$clear_cmake" ] ; then
+if  [ -n "$clear_cmake" ] ; then
     echo "Clearing CMake files from build."
-	rm -rf ./build/*
+	rm -rf ./build/$build_type
 fi
 
-
+build_type_lower=$(echo $build_type | tr '[:upper:]' '[:lower:]')
 for lib in "${clear_libs[@]}"; do
     if [[ "$lib" == "all" ]]; then
         echo "Clearing all installed libraries"
-        rm -r ./build/$build_type/deps-build/* ./build/$build_type/deps-install/*
+        rm -r ./build/$build_type/deps-build/*
+        rm -r ./build/$build_type/deps-install/*
     else
         echo "Clearing library: $lib"
-        rm -r ./build/$build_type/deps-build/$lib ./build/$build_type/deps-install/$lib
+        rm -r ./build/$build_type/deps-build/$lib
+        rm -r ./build/$build_type/deps-install/$lib
     fi
 done
 
-
-
-
-
+if [[ ! "$download_method" =~ native|conan|find|none ]]; then
+    echo "Download method unsupported: $download_method"
+    exit 1
+fi
 
 
 
@@ -133,13 +140,14 @@ Running script:
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type
             -DMARCH=$march
-            -DENABLE_OPENMP=$with_openmp
-            -DENABLE_SPDLOG=$with_spdlog
-            -DENABLE_H5PP=$with_h5pp
+            -DDOWNLOAD_METHOD=$download_method
+            -DENABLE_OPENMP=$enable_openmp
+            -DENABLE_SPDLOG=$enable_spdlog
+            -DENABLE_H5PP=$enable_h5pp
             -DENABLE_TESTS=$enable_tests
-            -DDOWNLOAD_MISSING=$download_missing
             -DBUILD_SHARED_LIBS=$shared
             -DGCC_TOOLCHAIN=$gcc_toolchain
+            -DCMAKE_VERBOSE_MAKEFILE=$verbose
             $extra_flags
             -G "CodeBlocks - Unix Makefiles" ../../
     cmake --build . --target $build_target -- -j $make_threads
@@ -152,16 +160,24 @@ if [ -z "$dryrun" ] ;then
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type \
             -DMARCH=$march \
-            -DENABLE_OPENMP=$with_openmp \
-            -DENABLE_SPDLOG=$with_spdlog \
-            -DENABLE_EIGEN3=$with_eigen3\
-            -DENABLE_H5PP=$with_h5pp\
+            -DDOWNLOAD_METHOD=$download_method \
+            -DENABLE_OPENMP=$enable_openmp \
+            -DENABLE_SPDLOG=$enable_spdlog \
+            -DENABLE_EIGEN3=$enable_eigen3 \
+            -DENABLE_H5PP=$enable_h5pp \
             -DENABLE_TESTS=$enable_tests \
-            -DDOWNLOAD_MISSING=$download_missing \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
+            -DCMAKE_VERBOSE_MAKEFILE=$verbose \
             $extra_flags \
             -G "CodeBlocks - Unix Makefiles" ../../
     cmake --build . --target $build_target -- -j $make_threads
 fi
 
+if [ "$enable_tests" = "ON" ] ;then
+    if [[ "$target" == *"test-"* ]]; then
+        ctest -C $build_type --verbose -R $target
+    else
+       ctest -C $build_type --output-on-failure
+    fi
+fi

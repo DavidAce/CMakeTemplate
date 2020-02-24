@@ -4,7 +4,6 @@
 
 #include "logger.h"
 #include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/stdout_sinks.h>
 
 void Logger::enableTimeStamp(std::shared_ptr <spdlog::logger> &log) {
