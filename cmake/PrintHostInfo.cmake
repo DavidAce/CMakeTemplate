@@ -1,15 +1,19 @@
-##################################################################
-### Print operating system details                          ###
-##################################################################
-cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-set(GET_OS_INFO_CMD lsb_release -a)
-if(${CMAKE_HOST_APPLE})
-    set(GET_OS_INFO_CMD "sw_vers")
-endif()
-execute_process(COMMAND ${GET_OS_INFO_CMD}
-        OUTPUT_VARIABLE OS_DETAILS
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("========= DETECTED OS =========")
-message("Hostname: " ${_host_name})
-message("${OS_DETAILS}")
-message("===============================")
+
+
+if(CMT_PRINT_INFO)
+
+    # Print host properties
+    cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
+    cmake_host_system_information(RESULT _proc_type QUERY PROCESSOR_DESCRIPTION)
+    cmake_host_system_information(RESULT _os_name QUERY OS_NAME)
+    cmake_host_system_information(RESULT _os_release QUERY OS_RELEASE)
+    cmake_host_system_information(RESULT _os_version QUERY OS_VERSION)
+    cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
+    message(STATUS "| DMRG BUILD INFO:\n"
+            "-- |----------------\n"
+            "-- | ${_host_name}\n"
+            "-- | ${_os_name} ${_os_platform} ${_os_release}\n"
+            "-- | ${_proc_type}\n"
+            "-- | ${_os_version}")
+
+endif ()

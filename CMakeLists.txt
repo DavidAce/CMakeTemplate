@@ -1,63 +1,86 @@
 
+cmake_minimum_required(VERSION 3.12)
 
-### Enforce an out-of-source build, because c'mon...
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(STATUS "CMakeTemplate requires an out-of-source build.")
-    message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
-    message(STATUS "CMakeCache.txt")
-    message(STATUS "CMakeFiles")
-    message(STATUS "Once these files are removed, create a separate directory")
-    message(STATUS "and run CMake from there")
-    message(FATAL_ERROR "in-source build detected")
+### Setup project name and language
+project(CMT VERSION 1.0
+        DESCRIPTION "A CMake project template"
+        HOMEPAGE_URL "https://github.com/DavidAce/CMakeTemplate"
+        LANGUAGES CXX)
+
+### Generate warnings if any are needed
+include(cmake/DeprecationWarnings.cmake)
+
+
+# Set default policies if CMake is new enough
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+    cmake_policy(SET CMP0074 NEW) # To let find_package calls use <PackageName>_ROOT variables
+    cmake_policy(SET CMP0075 NEW) # Include file check macros honor CMAKE_REQUIRED_LIBRARIES
+    # Use cmake_policy CMP0067 to let try_compile honor current CMAKE_CXX_STANDARD setting.
+    # See here https://stackoverflow.com/questions/47213356/cmake-using-corrext-c-standard-when-checking-for-header-files
+    cmake_policy(SET CMP0067 NEW)
 endif()
 
-cmake_minimum_required(VERSION 3.12)
-### Setup project name and language
-project(CMakeTemplate CXX)
 
 ### Set options for compilation
-option(ENABLE_TESTS                 "Enables CTest testing"                                                           OFF)
-option(BUILD_SHARED_LIBS            "Sets shared linking on/off"                                                      OFF)
-option(ENABLE_EIGEN3                "Use Eigen3 Library. Guide with -DEIGEN_INCLUDE_DIR:PATH=<dir-to-eigen3>"         OFF)
-option(ENABLE_SPDLOG                "Use SpdLog logging library. Guide with -Dspdlog_DIR:PATH=<dir-to-spdlog>"        OFF)
-option(ENABLE_H5PP                  "Use h5pp, a C++ front-end to HDF5"                                               OFF)
-option(ENABLE_OPENMP                "Enable OpenMP flags such as -fopenmp"                                            OFF)
-option(ENABLE_LTO                   "Enable link time optimization"                                                   OFF)
-option(AS_SUBPROJECT                "Try using this as a subproject with add_subdirectory()"                          OFF)
-option(APPEND_LIBSUFFIX             "Append <libname> to CMAKE_INSTALL_PREFIX"                                        OFF)
+option(BUILD_SHARED_LIBS               "Sets shared linking on/off"                                             OFF)
+option(CMT_ENABLE_H5PP                 "Use h5pp, a C++ front-end to HDF5 (includes Eigen, fmt and spdlog)"     OFF)
+option(CMT_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                  OFF)
+option(CMT_ENABLE_THREADS              "Use C++11 stl threads e.g. in Eigen::Tensor"                            OFF)
+option(CMT_ENABLE_OPENMP               "Enable OpenMP flags such as -fopenmp"                                   OFF)
+option(CMT_ENABLE_LTO                  "Enable link time optimization"                                          OFF)
+option(CMT_ENABLE_TESTS                "Enables CTest testing"                                                  OFF)
+option(CMT_IS_SUBPROJECT               "Use CMT with add_subdirectory()"                                        OFF)
+option(CMT_DEPS_IN_SUBDIR              "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"               OFF)
+option(CMT_PRINT_INFO                  "Print info during cmake configuration"                                  OFF)
+option(CMT_ENABLE_MPI                  "Enables use of MPI (work in progress)"                                  OFF)
+option(CMT_ENABLE_ASAN                 "Enable runtime address sanitizer -fsanitize=address"                    OFF)
+option(CMT_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation" ON)
+option(CMT_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"              OFF)
+option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
 
-
-
-#################################################################
-### Make an "enum" for valid download methods                 ###
-#################################################################
-set(VALID_DOWNLOAD_METHODS none find-only conan native)
-set(DOWNLOAD_METHOD find-only CACHE STRING "Download method for external dependencies")
-set_property(CACHE DOWNLOAD_METHOD  PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
-if(NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
-    message(FATAL_ERROR "DOWNLOAD_METHOD must be one of ${VALID_DOWNLOAD_METHODS}")
+### Spdlog implies fmt
+if(CMT_ENABLE_SPDLOG)
+    set(CMT_ENABLE_FMT ON CACHE INTERNAL "CMT_ENABLE_SPDLOG:ON implies CMT_ENABLE_FMT:ON)")
 endif()
-
 
 ### h5pp includes eigen and spdlog as a dependencies
-if(ENABLE_H5PP)
+if(CMT_ENABLE_H5PP)
     message(STATUS "NOTE: Eigen3 and spdlog are included with h5pp")
-    set(ENABLE_EIGEN3 OFF)
-    set(ENABLE_SPDLOG OFF)
+    set(CMT_ENABLE_EIGEN3 OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen and Spdlog")
+    set(CMT_ENABLE_SPDLOG OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen and Spdlog")
 endif()
 
 
+# Make an "enum" for valid package managers: find cmake find-or-cmake conan
+set(CMT_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)
+set(CMT_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
+set_property(CACHE CMT_PACKAGE_MANAGER PROPERTY STRINGS ${CMT_PACKAGE_MANAGERS_VALID})
+if (NOT CMT_PACKAGE_MANAGER IN_LIST CMT_PACKAGE_MANAGERS_VALID)
+    message(FATAL_ERROR "CMT_PACKAGE_MANAGER must be one of ${CMT_PACKAGE_MANAGERS_VALID}")
+endif ()
 
-# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
-# tree of a project that uses it. Users may set the non-cached variable AS_SUBPROJECT
-# before add_subdirectory(h5pp)
-if(NOT AS_SUBPROJECT)
-    if("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-        set (AS_SUBPROJECT FALSE)
-    else()
-        message(STATUS "Detected usage as subproject")
-        set (AS_SUBPROJECT TRUE)
-    endif()
+
+
+
+# Used when this is a subproject (e.g., as Git submodule/subtree) in the source
+# tree of a project that uses it. Users may set the option CMT_IS_SUBPROJECT
+# before add_subdirectory(CMT)
+if (NOT CMT_IS_SUBPROJECT)
+    if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
+        set(CMT_IS_SUBPROJECT OFF)
+    else ()
+        message(STATUS "Detected CMT as subproject")
+        set(CMT_IS_SUBPROJECT ON)
+    endif ()
+endif ()
+
+
+### Setup dependency install paths
+include(GNUInstallDirs)
+string(TOLOWER ${CMAKE_BUILD_TYPE} cmake_build_type)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/cmt-deps-install")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/cmt-deps-install" CACHE PATH "..." FORCE)
 endif()
 
 
@@ -72,25 +95,54 @@ include(cmake/gitversion.cmake)
 
 ### Print operating system details
 include(cmake/PrintHostInfo.cmake)
-
-
-### Print compiler details
-message("Compiling with: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-
-
+### Print info about options
+include(cmake/PrintOptionInfo.cmake)
 
 
 ### Create a helper target with all the options you need to compile
 ### This one is useful to pass to tests and examples so that they compile
 ### In the same way as our main project.
-add_library(project-settings INTERFACE)
+add_library(cmt-settings INTERFACE)
 
+###  Enable c++17 support (required by h5pp)
+target_compile_features(cmt-settings INTERFACE cxx_std_17)
 
 
 ### Add all source files
 add_executable(${PROJECT_NAME} source/main.cpp )
 target_include_directories(${PROJECT_NAME} PRIVATE source)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_WHAT_YOU_USE TRUE)
 
+
+
+
+### Force cmake to find static library suffixes on static builds
+### Reason: Some third party lib-config.cmake scripts have the bad habit
+### of injecting shared libs into static builds
+if(BUILD_SHARED_LIBS)
+    set(LINK_TYPE SHARED)
+else()
+    set(LINK_TYPE STATIC)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX} )
+    if(NOT CMT_ENABLE_ASAN)
+        target_link_libraries  (${PROJECT_NAME} PUBLIC -static)   ### Static linkage
+    endif()
+endif()
+
+
+
+# Settings for sanitizers           ###
+if(CMT_ENABLE_ASAN)
+    target_compile_options(${PROJECT_NAME} INTERFACE -fsanitize=address -fno-omit-frame-pointer)
+    target_link_libraries(${PROJECT_NAME} INTERFACE  -fsanitize=address)
+    if(NOT BUILD_SHARED_LIBS)
+        target_link_libraries(${PROJECT_NAME} INTERFACE -static-libasan)
+    endif()
+endif()
+if(CMT_ENABLE_USAN)
+    target_compile_options(${PROJECT_NAME} INTERFACE -fsanitize=undefined -fno-omit-frame-pointer)
+    target_link_libraries(${PROJECT_NAME} INTERFACE -fsanitize=undefined)
+endif()
 
 
 
@@ -98,33 +150,53 @@ target_include_directories(${PROJECT_NAME} PRIVATE source)
 ### Preempt Threads::Threads                                   ###
 ### It's looked for in dependencies, so we make it right       ###
 ### before it's done wrong, i.e. with pthread instead of       ###
-### -lpthread.                                     ###
+### -lpthread.                                                 ###
+### Here we specify the linking twice                          ###
+### 1) As string to make sure -lpthread gets sandwiched by     ###
+###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
+### 2) As usual to make sure that if somebody links            ###
+###    Threads::Threads, then any repeated pthread appended    ###
+###    to the end (the wrong order causes linking errors)      ###
 ##################################################################
 if(NOT TARGET Threads::Threads)
-    set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
-    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads)
-    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+    target_link_libraries(Threads::Threads INTERFACE -Wl,--allow-multiple-definition,--whole-archive,-lpthread,--no-whole-archive)
+    target_link_libraries(Threads::Threads INTERFACE rt dl)
 endif()
 
 
 
-###########################################
-### Fetch or find all the dependencies  ###
-###########################################
-if(DOWNLOAD_METHOD MATCHES "conan")
-    include(cmake/SetupDependenciesConan.cmake)
-elseif(DOWNLOAD_METHOD MATCHES "find|native")
-    include(cmake/SetupDependenciesNative.cmake)
+### Fetch or find all the dependencies
+include(cmake/SetupSearchPaths.cmake)
+include(cmake/SetupDependenciesCMake.cmake)
+include(cmake/SetupDependenciesConan.cmake)
+
+### Link all the things!
+target_link_libraries(${PROJECT_NAME} PRIVATE cmt-settings)  # Link everything to main project
+
+# Print summary of CMake configuration
+if (CMT_PRINT_INFO)
+    include(cmake/PrintTargetInfo.cmake)
+    include(cmake/getExpandedTarget.cmake)
+    message(STATUS "| CMT TARGET SUMMARY")
+    message(STATUS "|-------------------")
+    print_compiler_info("| ")
+    expand_target_all_targets(${PROJECT_NAME} CMT_TARGET_EXPANDED)
+    expand_target_all_targets(cmt-settings CMT_SETTINGS_TARGET_EXPANDED)
+    foreach(tgt ${CMT_TARGET_EXPANDED})
+        print_target_info(${tgt} "| ")
+    endforeach()
+    foreach(tgt ${CMT_SETTINGS_TARGET_EXPANDED})
+        print_target_info(${tgt} "| ")
+    endforeach()
+    mark_as_advanced(CMT_TARGET_EXPANDED)
+    mark_as_advanced(CMT_SETTINGS_TARGET_EXPANDED)
 endif()
-include(cmake/PrintTargetInfo.cmake)
-target_link_libraries(${PROJECT_NAME} PRIVATE project-settings)  # Link everything to main project
-print_target_info(${PROJECT_NAME})
 
 
-# Enable link time optimization
-if(ENABLE_LTO)
-    ### Check if we can enable LTO
+### Check if we can enable Link Time Optimization
+if(CMT_ENABLE_LTO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT supported OUTPUT error)
     if(supported)
@@ -132,26 +204,60 @@ if(ENABLE_LTO)
         set_target_properties(${PROJECT_NAME} PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
     else()
         message(STATUS "IPO / LTO not supported: <${error}>, will not enable")
+        set(CMT_ENABLE_LTO OFF CACHE)
     endif()
 endif()
 
 
 
-### CTest testing
-if(ENABLE_TESTS AND NOT AS_SUBPROJECT)
+
+##################################################################
+### Speed up compilation with precompiled headers              ###
+##################################################################
+if(CMT_ENABLE_PCH)
+    if(COMMAND target_precompile_headers)
+        target_precompile_headers(cmt-settings INTERFACE <string> <vector> <array> <optional> <memory>)
+        target_precompile_headers(${PROJECT_NAME} PRIVATE <string>)
+    endif()
+endif()
+
+#######################################
+# Settings for ccache               ###
+#######################################
+if(CMT_ENABLE_CCACHE)
+    set(COMPILER_OK ON)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(cmt-settings INTERFACE -Xclang -fno-pch-timestamp)
+        target_compile_options(${PROJECT_NAME} PRIVATE -Xclang -fno-pch-timestamp)
+    endif()
+
+    mark_as_advanced(COMPILER_OK)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "10.0.0")
+        set(COMPILER_OK OFF)
+    endif()
+    if(COMPILER_OK)
+        find_program(CCACHE_PROGRAM ccache)
+        if(CCACHE_PROGRAM)
+            set_target_properties(${PROJECT_NAME} PROPERTIES CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+            set_target_properties(cmt-settings PROPERTIES CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+            message(STATUS "Using ccache ${CCACHE_PROGRAM}")
+            if(CMT_ENABLE_PCH AND COMMAND target_precompile_headers)
+                message(STATUS "Detected ccache + pch: Remember to set --> sloppiness = include_file_mtime,pch_defines,time_macros <-- in your ccache.conf")
+            endif()
+        else()
+            message(STATUS "ccache program could not be found")
+        endif()
+    endif()
+endif()
+
+
+
+
+## CTest
+if (CMT_ENABLE_TESTS AND NOT CMT_IS_SUBPROJECT)
     enable_testing()
-    if(TARGET h5pp::h5pp OR TARGET CONAN_PKG::h5pp)
-        add_subdirectory(tests/h5pp)
-    endif()
-    if(TARGET spdlog::spdlog OR TARGET CONAN_PKG::spdlog)
-        add_subdirectory(tests/spdlog)
-    endif()
-    if(TARGET Eigen3::Eigen OR TARGET CONAN_PKG::Eigen3 OR TARGET CONAN_PKG::eigen)
-        add_subdirectory(tests/eigen3)
-    endif()
-    if(TARGET openmp::openmp)
-        add_subdirectory(tests/openmp)
-    endif()
-endif()
+    add_subdirectory(tests)
+endif ()
+
 
 
