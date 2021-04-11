@@ -9,7 +9,7 @@ Usage            : $PROGNAME [-option | --option ] <=argument>
 -b | --build-type [=arg]        : Build type: [ Release | RelWithDebInfo | Debug | Profile ]  (default = Release)
 -c | --clear-cmake              : Clear CMake files before build (delete ./build)
 -d | --dry-run                  : Dry run
-   | --download-method          : Download libraries using [ native | conan ] (default = native)
+   | --package-manager          : Select package manager for dependencies [ find | cmake | find-or-cmake | conan ] (default = find)
 -f | --extra-flags [=arg]       : Extra CMake flags (defailt = none)
 -g | --gcc-toolchain [=arg]     : Path to GCC toolchain. Use with Clang if it can't find stdlib (defailt = none)
 -h | --help                     : Help. Shows this text.
@@ -39,7 +39,7 @@ PARSED_OPTIONS=$(getopt -n "$0"   -o hb:cl:df:g:j:st:v \
                 clear-cmake\
                 clear-libs:\
                 dry-run\
-                download-method:\
+                package-manager:\
                 enable-tests\
                 enable-shared\
                 gcc-toolchain:\
@@ -60,7 +60,7 @@ eval set -- "$PARSED_OPTIONS"
 
 build_type="Release"
 shared="OFF"
-download_method="native"
+package_manager="find"
 enable_tests="OFF"
 target="all"
 make_threads=8
@@ -77,7 +77,7 @@ do
     -l|--clear-libs)
             clear_libs=($(echo "$2" | tr ',' ' '))                  ; echo " * Clear libraries          : $2"      ; shift 2 ;;
     -d|--dry-run)                   dryrun="ON"                     ; echo " * Dry run                  : ON"      ; shift   ;;
-       --download-method)           download_method=$2              ; echo " * Download method          : $2"      ; shift 2 ;;
+       --package-manager)           package_manager=$2              ; echo " * Package Manager          : $2"      ; shift 2 ;;
     -f|--extra-flags)               extra_flags=$2                  ; echo " * Extra CMake flags        : $2"      ; shift 2 ;;
     -g|--gcc-toolchain)             gcc_toolchain=$2                ; echo " * GCC toolchain            : $2"      ; shift 2 ;;
     -j|--make-threads)              make_threads=$2                 ; echo " * MAKE threads             : $2"      ; shift 2 ;;
@@ -114,11 +114,11 @@ for lib in "${clear_libs[@]}"; do
     fi
 done
 
-if [[ ! "$download_method" =~ native|conan|find|none ]]; then
-    echo "Download method unsupported: $download_method"
+
+if [[ ! "$package_manager" =~ find|cmake|conan ]]; then
+    echo "Package manager unsupported: $package_manager"
     exit 1
 fi
-
 
 
 if [ -n "$dryrun" ]; then
@@ -134,11 +134,11 @@ Running script:
     cmake -E make_directory build/$build_type
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type
-            -DDOWNLOAD_METHOD=$download_method
-            -DENABLE_OPENMP=$enable_openmp
-            -DENABLE_SPDLOG=$enable_spdlog
-            -DENABLE_H5PP=$enable_h5pp
-            -DENABLE_TESTS=$enable_tests
+            -DCMT_PACKAGE_MANAGER=$package_manager
+            -DCMT_ENABLE_OPENMP=$enable_openmp
+            -DCMT_ENABLE_EIGEN3=$enable_eigen3
+            -DCMT_ENABLE_H5PP=$enable_h5pp
+            -DCMT_ENABLE_TESTS=$enable_tests
             -DBUILD_SHARED_LIBS=$shared
             -DGCC_TOOLCHAIN=$gcc_toolchain
             -DCMAKE_VERBOSE_MAKEFILE=$verbose
@@ -153,12 +153,11 @@ if [ -z "$dryrun" ] ;then
     cmake -E make_directory build/$build_type
     cd build/$build_type
     cmake   -DCMAKE_BUILD_TYPE=$build_type \
-            -DDOWNLOAD_METHOD=$download_method \
-            -DENABLE_OPENMP=$enable_openmp \
-            -DENABLE_SPDLOG=$enable_spdlog \
-            -DENABLE_EIGEN3=$enable_eigen3 \
-            -DENABLE_H5PP=$enable_h5pp \
-            -DENABLE_TESTS=$enable_tests \
+            -DCMT_PACKAGE_MANAGER=$package_manager  \
+            -DCMT_ENABLE_OPENMP=$enable_openmp  \
+            -DCMT_ENABLE_EIGEN3=$enable_eigen3 \
+            -DCMT_ENABLE_H5PP=$enable_h5pp \
+            -DCMT_ENABLE_TESTS=$enable_tests \
             -DBUILD_SHARED_LIBS=$shared \
             -DGCC_TOOLCHAIN=$gcc_toolchain \
             -DCMAKE_VERBOSE_MAKEFILE=$verbose \
