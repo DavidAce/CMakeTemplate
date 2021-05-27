@@ -1,0 +1,6 @@
+if(CMT_PACKAGE_MANAGER MATCHES "fetch")
+    include(cmake/Fetch_h5pp.cmake)
+    if(TARGET h5pp::h5pp)
+        target_link_libraries(cmt-dependencies INTERFACE h5pp::h5pp)
+    endif()
+endif()

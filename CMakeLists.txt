@@ -52,7 +52,7 @@ endif()
 
 
 # Make an "enum" for valid package managers: find cmake find-or-cmake conan
-set(CMT_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)
+set(CMT_PACKAGE_MANAGERS_VALID find fetch cmake find-or-cmake conan)
 set(CMT_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
 set_property(CACHE CMT_PACKAGE_MANAGER PROPERTY STRINGS ${CMT_PACKAGE_MANAGERS_VALID})
 if (NOT CMT_PACKAGE_MANAGER IN_LIST CMT_PACKAGE_MANAGERS_VALID)
@@ -93,6 +93,7 @@ endif()
 include(cmake/gitversion.cmake)
 
 
+
 ### Print operating system details
 include(cmake/PrintHostInfo.cmake)
 ### Print info about options
@@ -100,12 +101,11 @@ include(cmake/PrintOptionInfo.cmake)
 
 
 ### Create a helper target with all the options you need to compile
-### This one is useful to pass to tests and examples so that they compile
-### In the same way as our main project.
 add_library(cmt-settings INTERFACE)
 
-###  Enable c++17 support (required by h5pp)
-target_compile_features(cmt-settings INTERFACE cxx_std_17)
+
+### Create a helper target with all the dependencies
+add_library(cmt-dependencies INTERFACE)
 
 
 ### Add all source files
@@ -133,15 +133,15 @@ endif()
 
 # Settings for sanitizers           ###
 if(CMT_ENABLE_ASAN)
-    target_compile_options(${PROJECT_NAME} INTERFACE -fsanitize=address -fno-omit-frame-pointer)
-    target_link_libraries(${PROJECT_NAME} INTERFACE  -fsanitize=address)
+    target_compile_options(cmt-settings INTERFACE -fsanitize=address -fno-omit-frame-pointer)
+    target_link_libraries(cmt-settings INTERFACE  -fsanitize=address)
     if(NOT BUILD_SHARED_LIBS)
-        target_link_libraries(${PROJECT_NAME} INTERFACE -static-libasan)
+        target_link_libraries(cmt-settingsINTERFACE -static-libasan)
     endif()
 endif()
 if(CMT_ENABLE_USAN)
-    target_compile_options(${PROJECT_NAME} INTERFACE -fsanitize=undefined -fno-omit-frame-pointer)
-    target_link_libraries(${PROJECT_NAME} INTERFACE -fsanitize=undefined)
+    target_compile_options(cmt-settings INTERFACE -fsanitize=undefined -fno-omit-frame-pointer)
+    target_link_libraries(cmt-settings INTERFACE -fsanitize=undefined)
 endif()
 
 
@@ -169,11 +169,12 @@ endif()
 
 ### Fetch or find all the dependencies
 include(cmake/SetupSearchPaths.cmake)
+include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesCMake.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 ### Link all the things!
-target_link_libraries(${PROJECT_NAME} PRIVATE cmt-settings)  # Link everything to main project
+target_link_libraries(${PROJECT_NAME} PRIVATE cmt-settings cmt-dependencies)  # Link everything to main project
 
 # Print summary of CMake configuration
 if (CMT_PRINT_INFO)
@@ -204,7 +205,7 @@ if(CMT_ENABLE_LTO)
         set_target_properties(${PROJECT_NAME} PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
     else()
         message(STATUS "IPO / LTO not supported: <${error}>, will not enable")
-        set(CMT_ENABLE_LTO OFF CACHE)
+        set(CMT_ENABLE_LTO OFF CACHE STRING "IPO/LTO not supported")
     endif()
 endif()
 
