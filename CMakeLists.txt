@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 ### Setup project name and language
 project(CMT VERSION 1.0
@@ -25,6 +25,7 @@ endif()
 option(BUILD_SHARED_LIBS               "Sets shared linking on/off"                                             OFF)
 option(CMT_ENABLE_H5PP                 "Use h5pp, a C++ front-end to HDF5 (includes Eigen, fmt and spdlog)"     OFF)
 option(CMT_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                  OFF)
+option(CMT_ENABLE_FMT                  "Enables the {fmt} formatting library"                                   OFF)
 option(CMT_ENABLE_THREADS              "Use C++11 stl threads e.g. in Eigen::Tensor"                            OFF)
 option(CMT_ENABLE_OPENMP               "Enable OpenMP flags such as -fopenmp"                                   OFF)
 option(CMT_ENABLE_LTO                  "Enable link time optimization"                                          OFF)
@@ -38,16 +39,12 @@ option(CMT_ENABLE_PCH                  "Enable precompiled headers (if supported
 option(CMT_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"              OFF)
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
 
-### Spdlog implies fmt
-if(CMT_ENABLE_SPDLOG)
-    set(CMT_ENABLE_FMT ON CACHE INTERNAL "CMT_ENABLE_SPDLOG:ON implies CMT_ENABLE_FMT:ON)")
-endif()
-
 ### h5pp includes eigen and spdlog as a dependencies
 if(CMT_ENABLE_H5PP)
     message(STATUS "NOTE: Eigen3 and spdlog are included with h5pp")
-    set(CMT_ENABLE_EIGEN3 OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen and Spdlog")
-    set(CMT_ENABLE_SPDLOG OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen and Spdlog")
+    set(CMT_ENABLE_EIGEN3 OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen, Spdlog and fmt")
+    set(CMT_ENABLE_SPDLOG OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen, Spdlog and fmt")
+    set(CMT_ENABLE_FMT    OFF CACHE INTERNAL "CMT_ENABLE_H5PP:ON includes Eigen, Spdlog and fmt")
 endif()
 
 
@@ -75,15 +72,6 @@ if (NOT CMT_IS_SUBPROJECT)
 endif ()
 
 
-### Setup dependency install paths
-include(GNUInstallDirs)
-string(TOLOWER ${CMAKE_BUILD_TYPE} cmake_build_type)
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/cmt-deps-install")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/cmt-deps-install" CACHE PATH "..." FORCE)
-endif()
-
-
 ################################################################
 ### Get git version number                                   ###
 ### Generates a header gitversion/gitversion.h               ###
@@ -91,8 +79,6 @@ endif()
 ### Gives a namespace GIT:: with several git identifiers     ###
 ################################################################
 include(cmake/gitversion.cmake)
-
-
 
 ### Print operating system details
 include(cmake/PrintHostInfo.cmake)
@@ -185,14 +171,19 @@ if (CMT_PRINT_INFO)
     print_compiler_info("| ")
     expand_target_all_targets(${PROJECT_NAME} CMT_TARGET_EXPANDED)
     expand_target_all_targets(cmt-settings CMT_SETTINGS_TARGET_EXPANDED)
+    expand_target_all_targets(cmt-dependencies CMT_DEPENDENCIES_TARGET_EXPANDED)
     foreach(tgt ${CMT_TARGET_EXPANDED})
         print_target_info(${tgt} "| ")
     endforeach()
     foreach(tgt ${CMT_SETTINGS_TARGET_EXPANDED})
         print_target_info(${tgt} "| ")
     endforeach()
+    foreach(tgt ${CMT_DEPENDENCIES_TARGET_EXPANDED})
+        print_target_info(${tgt} "| ")
+    endforeach()
     mark_as_advanced(CMT_TARGET_EXPANDED)
     mark_as_advanced(CMT_SETTINGS_TARGET_EXPANDED)
+    mark_as_advanced(CMT_DEPENDENCIES_TARGET_EXPANDED)
 endif()
 
 

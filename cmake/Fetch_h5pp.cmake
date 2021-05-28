@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 option(H5PP_BUILD_EXAMPLES             "Builds examples"                                             OFF)
 option(H5PP_ENABLE_TESTS               "Enable testing"                                              ON)
@@ -18,7 +18,6 @@ FetchContent_Declare(h5pp
         GIT_TAG v1.8.6
         GIT_PROGRESS TRUE
         GIT_SHALLOW TRUE
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
         # h5pp flags
         -DH5PP_BUILD_EXAMPLES:BOOL=${H5PP_BUILD_EXAMPLES}

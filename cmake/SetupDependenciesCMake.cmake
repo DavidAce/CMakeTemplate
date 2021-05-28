@@ -1,6 +1,15 @@
 if(CMT_PACKAGE_MANAGER MATCHES "find|cmake")
 
-    ##############################################################################
+    # Setup build and install directories for dependencies
+    if(NOT CMT_DEPS_BUILD_DIR)
+        set(CMT_DEPS_BUILD_DIR ${CMAKE_BINARY_DIR}/cmt-deps-build)
+    endif()
+    if(NOT CMT_DEPS_INSTALL_DIR)
+        set(CMT_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/cmt-deps-install)
+    endif()
+
+
+        ##############################################################################
     ###  Optional OpenMP support                                               ###
     ###  Note that Clang has some  trouble with static openmp and that         ###
     ###  and that static openmp is not recommended. This tries to enable       ###

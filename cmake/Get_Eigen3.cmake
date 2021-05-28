@@ -15,11 +15,11 @@ if(NOT TARGET Eigen3::Eigen AND CMT_PACKAGE_MANAGER MATCHES "find|cmake")
 endif()
 
 if(NOT TARGET Eigen3::Eigen AND CMT_PACKAGE_MANAGER MATCHES "find|cmake")
-    message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "Eigen3 will be installed into ${CMT_DEPS_INSTALL_DIR}")
     include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
-    build_dependency(Eigen3 "${CMAKE_INSTALL_PREFIX}" "")
+    build_dependency(Eigen3 "${CMT_DEPS_INSTALL_DIR}" "")
     find_package(Eigen3 3.3.7
-            HINTS ${CMAKE_INSTALL_PREFIX}
+            HINTS ${CMT_DEPS_INSTALL_DIR}
             NO_DEFAULT_PATH)
     if(TARGET Eigen3::Eigen)
         message(STATUS "Eigen3 installed successfully")
