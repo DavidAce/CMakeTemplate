@@ -1,0 +1,132 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMT_ENABLE_OPENMP": "TRUE",
+        "CMT_ENABLE_MPI": "FALSE",
+        "CMT_ENABLE_TESTS": "TRUE",
+        "CMT_ENABLE_ASAN": "FALSE",
+        "CMT_ENABLE_USAN": "FALSE",
+        "CMT_CMAKE_DEBUG": "TRUE",
+        "CMAKE_VERBOSE_MAKEFILE": "FALSE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "STATUS",
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_CXX_STANDARD_REQUIRED": "TRUE",
+        "CMAKE_CXX_EXTENSIONS": "FALSE",
+        "CMAKE_POSITION_INDEPENDENT_CODE": "TRUE",
+        "THREADS_PREFER_PTHREAD_FLAG": "TRUE",
+        "CMAKE_CXX_FLAGS": "",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -ggdb -fno-omit-frame-pointer",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -ggdb -fno-omit-frame-pointer",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
+        "CMAKE_EXE_LINKER_FLAGS": "-Wl,--enable-new-dtags"
+      },
+      "environment": {
+        "NINJA_STATUS": "[run %r|beg %s|fin %f|tot %t|rate %o|time %e]:"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG -march=native -mtune=native",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "TRUE"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMT_ENABLE_ASAN": "TRUE",
+        "CMT_ENABLE_USAN": "TRUE",
+        "CMT_CMAKE_DEBUG": "TRUE",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_SHARED_LIBS": "TRUE",
+        "CMAKE_VERBOSE_MAKEFILE": "TRUE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "FALSE"
+      },
+      "environment": {
+        "VERBOSE": "1"
+      }
+    },
+    {
+      "name": "conan",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan/conan_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
+      },
+      "environment": {
+        "PATH": "$env{HOME}/anaconda3/bin:$env{HOME}/miniconda3/bin:$penv{PATH}"
+      }
+    },
+    {
+      "name": "release-conan",
+      "displayName": "Release|conan package manager",
+      "inherits": [
+        "release",
+        "conan",
+        "default"
+      ]
+    },
+    {
+      "name": "debug-conan",
+      "displayName": "Debug|conan package manager",
+      "inherits": [
+        "debug",
+        "conan",
+        "default"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release-conan",
+      "configurePreset": "release-conan"
+    },
+    {
+      "name": "debug-conan",
+      "configurePreset": "debug-conan"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "release-conan",
+      "displayName": "Release|conan package manager",
+      "configurePreset": "release-conan",
+      "output": {
+        "verbosity": "extra",
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "debug-conan",
+      "displayName": "Debug|conan package manager",
+      "configurePreset": "debug-conan",
+      "output": {
+        "verbosity": "extra",
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    }
+  ]
+}

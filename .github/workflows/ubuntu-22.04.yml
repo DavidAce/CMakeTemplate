@@ -1,0 +1,100 @@
+name: Ubuntu 22.04
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-22.04
+    env:
+      cache-name: cache-v3-${{ matrix.compiler }}
+    strategy:
+      fail-fast: false # True stops all on first error. Stick to false when debugging
+      matrix:
+        include:
+          - { compiler: gcc }
+          - { compiler: clang }
+
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup caches
+        id: cmt-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.conan
+            ~/.conan2
+            ~/.ccache
+          key: ${{ env.cache-name }}
+
+      - run: sudo apt update  # Only for Docker jobs
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements.txt'
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ env.cache-name }}
+          max-size: 1000M
+
+      - name: Setup gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt install gcc-12 g++-12 -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
+          echo "CC=gcc-12"      >> $GITHUB_ENV
+          echo "CXX=g++-12"     >> $GITHUB_ENV
+
+      - name: Setup clang
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt install clang-15 libomp-15-dev -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
+          echo "CC=clang-15"    >> $GITHUB_ENV
+          echo "CXX=clang++-15" >> $GITHUB_ENV
+
+      - name: Setup apt packages
+        run: |
+          sudo apt install libstdc++-12-dev ninja-build gcovr lcov -y
+          sudo apt install libopenmpi-dev openmpi-bin autopoint -y
+
+      - name: Install conan
+        run: |
+          pip install conan
+          conan profile detect --force
+
+      - name: Setup OpenBLAS core type
+        run: echo "OPENBLAS_CORETYPE=NEHALEM" >> $GITHUB_ENV
+
+      - name: Run CMakePreset
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'debug-conan'
+          configurePresetAdditionalArgs: "['-DCMT_ENABLE_COVERAGE=TRUE']"
+          buildPreset: 'debug-conan'
+          testPreset: 'debug-conan'
+
+      - name: Coverage
+        if: matrix.compiler == 'gcc'
+        run: |
+          # Create lcov report
+          lcov --gcov-tool=gcov-12 --capture --directory build/debug-conan --output-file coverage.info
+          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
+          # Upload report to CodeCov
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
+
+
+
+

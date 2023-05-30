@@ -1,16 +1,10 @@
-# Here you can specify desired software packages to be downloaded by conan.
-# To activate reading this file from CMakeLists.txt, enable the setting -DCMT_PACKAGE_MANAGER=conan
-
-
 [requires]
-h5pp/1.8.5@
-eigen/3.3.9@
-spdlog/1.8.5@
-# Temporarily fix fmt version since 7.1.2 broke ostreams
-fmt/7.1.3@
+h5pp/1.11.0
+eigen/3.4.0
+spdlog/1.11.0
+fmt/9.1.0
 
 [generators]
-cmake
+CMakeDeps
 
-[options]
-*:shared=False
+

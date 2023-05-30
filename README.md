@@ -1,58 +1,62 @@
-[![Build Status](https://travis-ci.org/DavidAce/CMakeTemplate.svg?branch=cpp-cmake)](https://travis-ci.org/DavidAce/CMakeTemplate)
+[![Ubuntu 22.04](https://github.com/DavidAce/CMakeTemplate/actions/workflows/ubuntu-22.04.yml/badge.svg)](https://github.com/DavidAce/CMakeTemplate/actions/workflows/ubuntu-22.04.yml)
+
 # CMake Template
-A template for building C++ projects using modern CMake with automated (but optional) software packages.
-
-
-This template has two main purposes. 
-1) To speed up the process of deploying a new C++ project with a selection of 
-optional libraries.
-2) Serve as a base for learning CMake. I believe that automating dependencies as shown here is a good way to showcase many aspects of CMake.
- 
-The optional packages are:
-- [Eigen3](http://eigen.tuxfamily.org/)  For linear algebra
-- [h5pp](https://github.com/DavidAce/h5pp) For fast and simple binary storage (includes hdf5, eigen, spdlog and fmt)
-
-The reasoning behind this selection is that these libraries are either useful (to me), a staple in scientific computing 
-or simple enough to install and link to. 
+A template for building C++ projects using modern CMake with dependencies handled by Conan.
 
 ## Features
-- Optional software components (see below) installed locally at configure-time
 - Unit testing with CTest 
-- Convenience shell script for building and selecting software components
+- Conan integration for dependencies
+
+## Requirements
+- C++17 compiler. Tested with
+    - GNU GCC version 12,
+    - LLVM Clang version 15
+- CMake version 3.24 or above.
+- conan version 2 **(Recommended)**
+
+## Dependencies
+By default, the direct dependencies are:
+- [h5pp](https://github.com/DavidAce/h5pp) For fast and simple binary storage (includes hdf5, eigen, spdlog and fmt)
+- [Eigen3](http://eigen.tuxfamily.org/)  For linear algebra
+- [fmt](https://github.com/fmtlib/fmt)  For string formatting
+- [spdlog](https://github.com/gabime/spdlog)  For logging
+
+These dependencies are installed automatically when using the bundled CMake Presets `release-conan` or `debug-conan`.
+
+Note that `h5pp` itself has the same dependencies, so they should already be present if h5pp was installed previously.
+
 
 ## Compatibility
 This template has only been tested in Linux environments.
 
 
-## Requirements
+## Usage with CMake Presets
+Build as any regular out-of-source CMake project after installing the dependencies above.
 
-- C++ compiler. Tested with
-    - GNU GCC version >= 8,
-    - LLVM Clang version >= 7
-    - **Note that h5pp requires C++17**
-- CMake version 3.12 or above.
+Use the bundled CMake Presets to opt-in to automatic dependency installation with conan.
 
+#### Step 1: Install conan
 
-## Usage
-Build as any regular out-of-source CMake project.
+    pip install conan
+    conan profile detect
 
-To make it even simpler you can use the supplied build script `./build.sh`.
-
-Example:
+#### Step 2: Clone CMakeTemplate and list its presets
+Open a terminal and run
 
     git clone https://github.com/DavidAce/CMakeTemplate.git
     cd CMakeTemplate
-    ./build.sh --enable-openmp --with-eigen3 --download-missing
+    cmake --list-presets
+    -------------------------------------------------------
+    >    Available configure presets:
+    >
+    >      "release-conan" - Release|conan package manager
+    >      "debug-conan"   - Debug|conan package manager
 
-Type `./build.sh -h` to see how to enable/disable more options.
+#### Step 3: Configure and build
+Select a preset listed in the previous step, and run
 
+    cmake --preset=release-conan
+    cmake --build --preset=release-conan
 
-## CMake build options
-- Enable Eigen3 linear algebra library         `-D ENABLE_EIGEN3:BOOL=ON/OFF`        (default `OFF`)
-- Enable h5pp HDF5-wrapper library for C++     `-D ENABLE_H5PP:BOOL=ON/OFF`          (default `OFF`)
-    - Note: h5pp includes HDF5, Eigen3 and spdlog 
-- Package manager for optional dependencies    `-D PACKAGE_MANAGER:STRING=find|find-or-cmake|cmake|conan`     (default `find`)
-- Enable testing (ctest)                       `-D ENABLE_TESTS:BOOL=ON/OFF`         (default `OFF`)
-- Enable OpenMP                                `-D ENABLE_OPENMP:BOOL=ON/OFF`        (default `OFF`)
-- Shared/static linking                        `-D BUILD_SHARED_LIBS:BOOL=ON/OFF`    (default `OFF`)
+These commands configure the project and builds the executable at `./build/Release/CMT`
 
