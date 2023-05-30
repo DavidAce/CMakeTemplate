@@ -23,7 +23,7 @@ By default, the direct dependencies are:
 
 These dependencies are installed automatically when using the bundled CMake Presets `release-conan` or `debug-conan`.
 
-Note that `h5pp` itself has the same dependencies, so they should already be present if h5pp was installed previously.
+Note that `h5pp` itself has the same dependencies, so they should already be present if `h5pp` was installed previously.
 
 
 ## Compatibility
@@ -58,5 +58,5 @@ Select a preset listed in the previous step, and run
     cmake --preset=release-conan
     cmake --build --preset=release-conan
 
-These commands configure the project and builds the executable at `./build/Release/CMT`
+These commands configure the project and builds the executable at `./build/release-conan/CMT`
 
