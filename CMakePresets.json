@@ -28,8 +28,7 @@
         "CMAKE_CXX_FLAGS": "",
         "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -ggdb -fno-omit-frame-pointer",
         "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -ggdb -fno-omit-frame-pointer",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
-        "CMAKE_EXE_LINKER_FLAGS": "-Wl,--enable-new-dtags"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
       },
       "environment": {
         "NINJA_STATUS": "[run %r|beg %s|fin %f|tot %t|rate %o|time %e]:"
