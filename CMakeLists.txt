@@ -66,12 +66,17 @@ endif()
 target_link_libraries(CMT PUBLIC cmt-libs)  # Link everything to main project
 
 
+if(CMT_ENABLE_COVERAGE)
+    target_compile_options(cmt-libs INTERFACE --coverage)
+    target_link_options(cmt-libs INTERFACE --coverage)
+endif()
+
+
 ### CTest
 if(CMT_ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
 
 if(CMT_CMAKE_DEBUG)
     # Print summary of CMake configuration
