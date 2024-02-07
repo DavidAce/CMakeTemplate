@@ -15,8 +15,6 @@
         "CMT_ENABLE_OPENMP": "TRUE",
         "CMT_ENABLE_MPI": "FALSE",
         "CMT_ENABLE_TESTS": "TRUE",
-        "CMT_ENABLE_ASAN": "FALSE",
-        "CMT_ENABLE_USAN": "FALSE",
         "CMT_CMAKE_DEBUG": "TRUE",
         "CMAKE_VERBOSE_MAKEFILE": "FALSE",
         "CMAKE_MESSAGE_LOG_LEVEL": "STATUS",
@@ -27,7 +25,7 @@
         "THREADS_PREFER_PTHREAD_FLAG": "TRUE",
         "CMAKE_CXX_FLAGS": "",
         "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -ggdb -fno-omit-frame-pointer",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -ggdb -fno-omit-frame-pointer",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -g -fno-omit-frame-pointer",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
       },
       "environment": {
@@ -47,8 +45,6 @@
       "name": "debug",
       "hidden": true,
       "cacheVariables": {
-        "CMT_ENABLE_ASAN": "TRUE",
-        "CMT_ENABLE_USAN": "TRUE",
         "CMT_CMAKE_DEBUG": "TRUE",
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_SHARED_LIBS": "TRUE",
