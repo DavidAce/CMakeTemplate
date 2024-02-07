@@ -41,30 +41,29 @@ set_target_properties(CMT PROPERTIES LINK_WHAT_YOU_USE TRUE)
 
 ### Create a helper targets that can be reused to build tests
 add_library(cmt-libs INTERFACE)
-add_library(cmt-flags INTERFACE)
-include(cmake/CompilerFlags.cmake)
 
 
 
 ### Find dependencies
-find_package(h5pp   1.11.0 REQUIRED)
-find_package(Eigen3 3.4.0  REQUIRED)
-target_link_libraries(cmt-libs INTERFACE h5pp::h5pp Eigen3::Eigen)
+find_package(h5pp   1.11.1  REQUIRED)
+find_package(Eigen3 3.4.0   REQUIRED)
+find_package(spdlog 1.13.0  REQUIRED)
+target_link_libraries(cmt-libs INTERFACE h5pp::h5pp Eigen3::Eigen spdlog::spdlog)
 
 if(CMT_ENABLE_OPENMP)
-    find_package(OpenMP COMPONENTS CXX REQUIRED) # Uses DMRG's own find module
+    find_package(OpenMP COMPONENTS CXX REQUIRED)
     target_link_libraries(cmt-libs INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
 if(CMT_ENABLE_MPI)
-    find_package(MPI COMPONENTS CXX REQUIRED) # Uses DMRG's own find module
+    find_package(MPI COMPONENTS CXX REQUIRED)
     target_link_libraries(cmt-libs INTERFACE MPI::MPI_CXX)
 endif()
 
 
 
 ### Link to executable
-target_link_libraries(CMT PUBLIC cmt-libs cmt-flags)  # Link everything to main project
+target_link_libraries(CMT PUBLIC cmt-libs)  # Link everything to main project
 
 
 ### CTest
