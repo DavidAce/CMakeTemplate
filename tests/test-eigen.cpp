@@ -1,6 +1,3 @@
-//
-// Created by david on 2019-10-05.
-//
 #include <Eigen/Core>
 #include <iostream>
 int main(){

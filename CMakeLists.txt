@@ -43,12 +43,12 @@ set_target_properties(CMT PROPERTIES LINK_WHAT_YOU_USE TRUE)
 add_library(cmt-libs INTERFACE)
 
 
-
 ### Find dependencies
-find_package(h5pp   1.11.1  REQUIRED)
-find_package(Eigen3 3.4.0   REQUIRED)
-find_package(spdlog 1.13.0  REQUIRED)
-target_link_libraries(cmt-libs INTERFACE h5pp::h5pp Eigen3::Eigen spdlog::spdlog)
+find_package(h5pp    1.11.1  REQUIRED)
+find_package(Eigen3  3.4.0   REQUIRED)
+find_package(spdlog  1.13.0  REQUIRED)
+find_package(doctest 2.4.1   REQUIRED)
+target_link_libraries(cmt-libs INTERFACE h5pp::h5pp Eigen3::Eigen spdlog::spdlog doctest::doctest)
 
 if(CMT_ENABLE_OPENMP)
     find_package(OpenMP COMPONENTS CXX REQUIRED)
@@ -59,7 +59,6 @@ if(CMT_ENABLE_MPI)
     find_package(MPI COMPONENTS CXX REQUIRED)
     target_link_libraries(cmt-libs INTERFACE MPI::MPI_CXX)
 endif()
-
 
 
 ### Link to executable

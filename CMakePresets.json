@@ -9,27 +9,30 @@
     {
       "name": "default",
       "hidden": true,
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMT_ENABLE_OPENMP": "TRUE",
         "CMT_ENABLE_MPI": "FALSE",
         "CMT_ENABLE_TESTS": "TRUE",
         "CMT_CMAKE_DEBUG": "TRUE",
-        "CMAKE_VERBOSE_MAKEFILE": "FALSE",
-        "CMAKE_MESSAGE_LOG_LEVEL": "STATUS",
-        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_CXX_STANDARD": "20",
         "CMAKE_CXX_STANDARD_REQUIRED": "TRUE",
         "CMAKE_CXX_EXTENSIONS": "FALSE",
         "CMAKE_POSITION_INDEPENDENT_CODE": "TRUE",
-        "THREADS_PREFER_PTHREAD_FLAG": "TRUE",
-        "CMAKE_CXX_FLAGS": "",
+        "CMAKE_CXX_FLAGS": "-O3 -DNDEBUG",
         "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -ggdb -fno-omit-frame-pointer",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -g -fno-omit-frame-pointer",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE"
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -g -fno-omit-frame-pointer"
+      }
+    },
+    {
+      "name": "conan",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan/conan_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
       },
       "environment": {
-        "NINJA_STATUS": "[run %r|beg %s|fin %f|tot %t|rate %o|time %e]:"
+        "PATH": "$env{HOME}/anaconda3/bin:$env{HOME}/miniconda3/bin:$penv{PATH}"
       }
     },
     {
@@ -49,27 +52,15 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_SHARED_LIBS": "TRUE",
         "CMAKE_VERBOSE_MAKEFILE": "TRUE",
-        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
-        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "FALSE"
+        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE"
       },
       "environment": {
         "VERBOSE": "1"
       }
     },
     {
-      "name": "conan",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan/conan_provider.cmake",
-        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
-      },
-      "environment": {
-        "PATH": "$env{HOME}/anaconda3/bin:$env{HOME}/miniconda3/bin:$penv{PATH}"
-      }
-    },
-    {
       "name": "release-conan",
-      "displayName": "Release|conan package manager",
+      "displayName": "Release|march=native|LTO|conan package manager",
       "inherits": [
         "release",
         "conan",
