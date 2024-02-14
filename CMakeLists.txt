@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 ### Setup project name and language
-project(CMT VERSION 1.1
+project(CMT VERSION 1.2
         DESCRIPTION "A CMake project template"
         HOMEPAGE_URL "https://github.com/DavidAce/CMakeTemplate"
         LANGUAGES CXX)
@@ -16,15 +16,6 @@ option(CMT_CMAKE_DEBUG   "Print info during CMake configuration"  OFF)
 
 
 
-################################################################
-### Get git version number                                   ###
-### Generates a header gitversion/gitversion.h               ###
-### Include it using #include <gitversion.h>                 ###
-### Gives a namespace GIT:: with several git identifiers     ###
-################################################################
-include(cmake/gitversion.cmake)
-
-
 if(CMT_DEBUG_CMAKE)
     ### Print operating system details
     include(cmake/PrintHostInfo.cmake)
@@ -35,20 +26,27 @@ add_executable(CMT
         source/main.cpp 
         # ...
         )
+
 target_include_directories(CMT PRIVATE source)
-set_target_properties(CMT PROPERTIES LINK_WHAT_YOU_USE TRUE)
-
-
-### Create a helper targets that can be reused to build tests
-add_library(cmt-libs INTERFACE)
 
 
 ### Find dependencies
-find_package(h5pp    1.11.1  REQUIRED)
-find_package(Eigen3  3.4.0   REQUIRED)
-find_package(spdlog  1.13.0  REQUIRED)
-find_package(doctest 2.4.1   REQUIRED)
-target_link_libraries(cmt-libs INTERFACE h5pp::h5pp Eigen3::Eigen spdlog::spdlog doctest::doctest)
+find_package(h5pp       1.11.1  REQUIRED)
+find_package(Eigen3     3.4.0   REQUIRED)
+find_package(spdlog     1.13.0  REQUIRED)
+find_package(doctest    2.4.1   REQUIRED)
+find_package(nanobench  4.3.11  REQUIRED)
+
+
+### Create a helper target that links dependencies (this target can be used to build tests and benchmarks)
+add_library(cmt-libs INTERFACE)
+
+# Link the libraries to the helper target
+target_link_libraries(cmt-libs INTERFACE h5pp::h5pp)
+target_link_libraries(cmt-libs INTERFACE Eigen3::Eigen )
+target_link_libraries(cmt-libs INTERFACE spdlog::spdlog )
+target_link_libraries(cmt-libs INTERFACE doctest::doctest)
+target_link_libraries(cmt-libs INTERFACE nanobench::nanobench)
 
 if(CMT_ENABLE_OPENMP)
     find_package(OpenMP COMPONENTS CXX REQUIRED)
@@ -61,13 +59,26 @@ if(CMT_ENABLE_MPI)
 endif()
 
 
-### Link to executable
-target_link_libraries(CMT PUBLIC cmt-libs)  # Link everything to main project
+### Link targets to the main executable
+target_link_libraries(CMT PUBLIC cmt-libs)
 
+
+################################################################
+### Get git version number                                   ###
+### Generates a header gitversion/gitversion.h               ###
+### Include it using #include <gitversion.h>                 ###
+### Gives a namespace GIT:: with several git identifiers     ###
+################################################################
+include(cmake/gitversion.cmake)
 
 if(CMT_ENABLE_COVERAGE)
     target_compile_options(cmt-libs INTERFACE --coverage)
     target_link_options(cmt-libs INTERFACE --coverage)
+endif()
+
+# Benchmarks
+if(CMT_ENABLE_BENCH)
+    add_subdirectory(bench)
 endif()
 
 
