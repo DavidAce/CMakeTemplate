@@ -1,5 +1,6 @@
 if(CMT_ENABLE_BENCH)
-    cmake_minimum_required(VERSION 3.15)
+    cmake_minimum_required(VERSION 3.24)
     message(STATUS "Enabling benchmarks")
     add_subdirectory(iter)
+    add_subdirectory(cstyle)
 endif()
