@@ -43,22 +43,22 @@ jobs:
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt install gcc-12 g++-12 -y
-          echo "FC=gfortran-12" >> $GITHUB_ENV
-          echo "CC=gcc-12"      >> $GITHUB_ENV
-          echo "CXX=g++-12"     >> $GITHUB_ENV
+          sudo apt install gcc-13 g++-13 gfortran-13 -y
+          echo "FC=gfortran-13" >> $GITHUB_ENV
+          echo "CC=gcc-13"      >> $GITHUB_ENV
+          echo "CXX=g++-13"     >> $GITHUB_ENV
 
       - name: Setup clang
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt install clang-15 libomp-15-dev -y
-          echo "FC=gfortran-12" >> $GITHUB_ENV
+          sudo apt install clang-15 libomp-15-dev gfortran-13 -y
+          echo "FC=gfortran-13" >> $GITHUB_ENV
           echo "CC=clang-15"    >> $GITHUB_ENV
           echo "CXX=clang++-15" >> $GITHUB_ENV
 
       - name: Setup apt packages
         run: |
-          sudo apt install libstdc++-12-dev ninja-build gcovr lcov -y
+          sudo apt install libstdc++-13-dev ninja-build gcovr lcov -y
           sudo apt install libopenmpi-dev openmpi-bin autopoint -y
 
       - name: Install conan
