@@ -1,0 +1,7 @@
+if(CMT_BUILD_EXAMPLES)
+    cmake_minimum_required(VERSION 3.24)
+    message(STATUS "Build examples ON")
+    add_subdirectory(01A-helloworld)
+    add_subdirectory(01B-function-signatures)
+    add_subdirectory(02A-linear-algebra)
+endif()

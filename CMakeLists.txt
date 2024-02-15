@@ -8,11 +8,14 @@ project(CMT VERSION 1.2
         LANGUAGES CXX)
 
 
-### Set options
-option(CMT_ENABLE_OPENMP "Enable OpenMP flags such as -fopenmp"   OFF)
-option(CMT_ENABLE_MPI    "Enables use of MPI (work in progress)"  OFF)
-option(CMT_ENABLE_TESTS  "Enables CTest testing"                  OFF)
-option(CMT_CMAKE_DEBUG   "Print info during CMake configuration"  OFF)
+### Set up options
+option(CMT_ENABLE_OPENMP   "Enable OpenMP flags such as -fopenmp"                 OFF)
+option(CMT_ENABLE_MPI      "Enables use of MPI (work in progress)"                OFF)
+option(CMT_ENABLE_COVERAGE "Adds the --coverage flag (used with github actions)"  OFF)
+option(CMT_BUILD_BENCH     "Builds benchmarks in ./bench"                         OFF)
+option(CMT_BUILD_EXAMPLES  "Builds examples in ./examples"                        OFF)
+option(CMT_BUILD_TESTS     "Builds unit tests in ./tests"                         OFF)
+option(CMT_CMAKE_DEBUG     "Print info during CMake configuration"                OFF)
 
 
 
@@ -71,22 +74,22 @@ target_link_libraries(CMT PUBLIC cmt-libs)
 ################################################################
 include(cmake/gitversion.cmake)
 
-if(CMT_ENABLE_COVERAGE)
-    target_compile_options(cmt-libs INTERFACE --coverage)
-    target_link_options(cmt-libs INTERFACE --coverage)
-endif()
-
-# Benchmarks
-if(CMT_ENABLE_BENCH)
-    add_subdirectory(bench)
-endif()
+add_subdirectory(bench)    # Builds benchmarks if CMT_BUILD_BENCH==ON
+add_subdirectory(examples) # Builds examples if CMT_BUILD_EXAMPLES==ON
 
 
 ### CTest
-if(CMT_ENABLE_TESTS)
+if(CMT_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+    if(CMT_ENABLE_COVERAGE)
+        # Coverage is used to check what fraction of the source code is tested
+        # We use this option in the github actions when compiling on Ubuntu with gcc
+        target_compile_options(cmt-libs INTERFACE --coverage)
+        target_link_options(cmt-libs INTERFACE --coverage)
+    endif()
 endif()
+
 
 if(CMT_CMAKE_DEBUG)
     # Print summary of CMake configuration
