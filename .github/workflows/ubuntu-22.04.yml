@@ -28,17 +28,16 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.conan
             ~/.conan2
-            ~/.ccache
           key: ${{ env.cache-name }}
 
       - run: sudo apt update  # Only for Docker jobs
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          cache: 'pip' # caching pip dependencies
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
@@ -81,9 +80,9 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           # Create lcov report
-          lcov --gcov-tool=gcov-12 --capture --directory build/debug-conan --output-file coverage.info
-          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
-          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
+          lcov --gcov-tool=gcov-13 --capture --directory build/debug-conan --output-file coverage.info
+          lcov --gcov-tool=gcov-13 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --gcov-tool=gcov-13 --list coverage.info # debug info
           # Upload report to CodeCov
           bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
 
