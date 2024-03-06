@@ -15,7 +15,7 @@ int main() {
 }
 
 
-
+// What is the type of T?
 
 
 
@@ -34,4 +34,10 @@ int main() {
 // Comments
 //  - Scopes on return statements?
 //  - Call function with <type>
-//  - What are the benefits of template?
+//  - What are the benefits of templates?
+//      - Code reuse
+//      - Run time costs move to compile time
+//      -
+//   - What are the drawbacks of templates?
+//   - Compilation time increases (if not careful)
+
