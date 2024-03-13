@@ -40,6 +40,7 @@ find_package(spdlog     1.13.0  REQUIRED)
 find_package(pcg-cpp            REQUIRED)
 find_package(doctest    2.4.1   REQUIRED)
 find_package(nanobench  4.3.11  REQUIRED)
+find_package(CLI11      2.3.2   REQUIRED)
 
 
 ### Create a helper target that links dependencies (this target can be used to build tests and benchmarks)
@@ -52,6 +53,7 @@ target_link_libraries(cmt-libs INTERFACE spdlog::spdlog )
 target_link_libraries(cmt-libs INTERFACE pcg-cpp::pcg-cpp )
 target_link_libraries(cmt-libs INTERFACE doctest::doctest)
 target_link_libraries(cmt-libs INTERFACE nanobench::nanobench)
+target_link_libraries(cmt-libs INTERFACE CLI11::CLI11)
 
 if(CMT_ENABLE_OPENMP)
     find_package(OpenMP COMPONENTS CXX REQUIRED)

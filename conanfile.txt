@@ -6,6 +6,7 @@ eigen/3.4.0                 # For linear algebra
 pcg-cpp/cci.20220409        # For random number generation
 doctest/2.4.11              # For unit tests
 nanobench/4.3.11            # For benchmarking
+cli11/2.3.2                 # For parsing command line arguments
 
 [generators]
 CMakeDeps
