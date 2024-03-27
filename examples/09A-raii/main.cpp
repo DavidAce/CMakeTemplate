@@ -6,10 +6,10 @@ class tictoc {
 
     private:
     hresclock::time_point tstart;
-    std::string           tname;
+    std::string_view      tname;
 
     public:
-    tictoc(const std::string &name = "") {
+    tictoc(std::string_view name) {
         tstart = hresclock::now();
         tname  = name;
     }
@@ -21,7 +21,6 @@ class tictoc {
 
 void func() {
     auto t = tictoc("func");
-
 }
 
 
