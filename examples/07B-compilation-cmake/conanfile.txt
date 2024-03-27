@@ -1,0 +1,12 @@
+[requires]
+h5pp/[>=1.11.2 <1.12]       # For storing data in HDF5 file format
+spdlog/[>=1.13.0 <1.14]     # For logging to stdout
+fmt/[>=10.1.0 <11]          # For formatting strings
+eigen/3.4.0                 # For linear algebra
+pcg-cpp/cci.20220409        # For random number generation
+cli11/2.3.2                 # For parsing command line arguments
+
+[generators]
+CMakeDeps
+
+
