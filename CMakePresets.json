@@ -12,7 +12,7 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMT_ENABLE_OPENMP": "TRUE",
-        "CMT_ENABLE_MPI": "FALSE",
+        "CMT_ENABLE_MPI": "TRUE",
         "CMT_BUILD_TESTS": "TRUE",
         "CMT_BUILD_BENCH": "TRUE",
         "CMT_BUILD_EXAMPLES": "TRUE",
