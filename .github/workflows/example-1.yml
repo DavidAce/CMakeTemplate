@@ -1,0 +1,39 @@
+name: Example 1
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    name: example-1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@latest
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup conan
+        run: |
+          pip install conan
+          conan profile detect --force
+
+      - name: Run CMake
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'debug-conan'
+          buildPreset: 'debug-conan'
+          testPreset: 'debug-conan'
+
+#      - name: Run CMake Classic
+#        run: |
+#          cmake --preset=debug-conan
+#          cmake --build --preset=debug-conan
+#          ctest --preset=debug-conan
+
+
+

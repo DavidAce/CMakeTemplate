@@ -8,14 +8,16 @@ class tictoc {
     hresclock::time_point tstart;
     std::string_view      tname;
 
+
     public:
     tictoc(std::string_view name) {
         tstart = hresclock::now();
         tname  = name;
     }
+
     ~tictoc() {
-        double result = std::chrono::duration_cast<duration_t>(hresclock::now() - tstart).count();
-        fmt::print("lifetime [{}]: {:.8f} s\n", tname, result);
+        double result1 = std::chrono::duration_cast<duration_t>(hresclock::now() - tstart).count();
+        fmt::print("lifetime [{}]: {:.8f} s\n", tname, result1);
     }
 };
 
