@@ -22,6 +22,10 @@ jobs:
           pip install conan
           conan profile detect --force
 
+      - name: Setup apt packages
+        run: |
+          sudo apt install ninja-build libopenmpi-dev -y
+
       - name: Run CMake
         uses: lukka/run-cmake@v10
         with:
