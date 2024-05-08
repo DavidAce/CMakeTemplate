@@ -1,5 +1,5 @@
-#include <format>
+#include <fmt/core.h>
 
 int main(){
-    std::printf("Hello world\n");
+    fmt::print("Hello world\n");
 }
