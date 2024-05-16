@@ -4,11 +4,23 @@ jobs:
   repo-sync:
     runs-on: ubuntu-latest
     environment: CMT-mirror
+#    steps:
+#      - name: Sync to KTH-condmat/CMT
+#        uses: wei/git-sync@v3.0.0
+#        with:
+#          source_repo: "DavidAce/CMT"
+#          source_branch: "master"
+#          destination_repo: "https://DavidAce:${{ secrets.CMT_ACCESS_TOKEN }}@github.com/KTH-condmat/CMT.git"
+#          destination_branch: "main"
     steps:
-      - name: Sync to KTH-condmat/CMT
-        uses: wei/git-sync@v3.0.0
-        with:
-          source_repo: "DavidAce/CMT"
-          source_branch: "master"
-          destination_repo: "https://DavidAce:${{ secrets.CMT_ACCESS_TOKEN }}@github.com/KTH-condmat/CMT.git"
-          destination_branch: "main"
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+    - name: repo-sync
+      uses: repo-sync/github-sync@v2
+      with:
+        source_repo: "https://DavidAce:${{ secrets.CMT_ACCESS_TOKEN }}@github.com/DavidAce/CMakeTemplate.git"
+        source_branch: "master"
+        destination_repo: "https://DavidAce:${{ secrets.CMT_ACCESS_TOKEN }}@github.com/KTH-condmat/CMT.git"
+        destination_branch: "main"
+        github_token: ${{ secrets.CMT_ACCESS_TOKEN }}
