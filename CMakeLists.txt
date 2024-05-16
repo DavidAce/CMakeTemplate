@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.24)
 project(CMT VERSION 1.2
         DESCRIPTION "A CMake project template"
         HOMEPAGE_URL "https://github.com/DavidAce/CMakeTemplate"
-        LANGUAGES CXX)
+        LANGUAGES C CXX)
 
 
 ### Set up options

@@ -16,7 +16,7 @@ jobs:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc }
+          - { compiler: gcc  }
           - { compiler: clang }
 
 
