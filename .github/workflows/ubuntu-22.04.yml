@@ -16,7 +16,7 @@ jobs:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc  }
+          - { compiler: gcc }
           - { compiler: clang }
 
 
@@ -41,22 +41,22 @@ jobs:
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt install gcc-13 g++-13 gfortran-13 -y
-          echo "FC=gfortran-13" >> $GITHUB_ENV
-          echo "CC=gcc-13"      >> $GITHUB_ENV
-          echo "CXX=g++-13"     >> $GITHUB_ENV
+          sudo apt install gcc-12 g++-12 gfortran-12 -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
+          echo "CC=gcc-12"      >> $GITHUB_ENV
+          echo "CXX=g++-12"     >> $GITHUB_ENV
 
       - name: Setup clang
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt install clang-15 libomp-15-dev gfortran-13 -y
-          echo "FC=gfortran-13" >> $GITHUB_ENV
+          sudo apt install clang-15 libomp-15-dev gfortran-12 -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
           echo "CC=clang-15"    >> $GITHUB_ENV
           echo "CXX=clang++-15" >> $GITHUB_ENV
 
       - name: Setup apt packages
         run: |
-          sudo apt install libstdc++-13-dev ninja-build gcovr lcov -y
+          sudo apt install libstdc++-12-dev ninja-build gcovr lcov -y
           sudo apt install libopenmpi-dev openmpi-bin autopoint -y
 
       - name: Install conan
@@ -79,9 +79,9 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           # Create lcov report
-          lcov --gcov-tool=gcov-13 --capture --directory build/debug-conan --output-file coverage.info
-          lcov --gcov-tool=gcov-13 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
-          lcov --gcov-tool=gcov-13 --list coverage.info # debug info
+          lcov --gcov-tool=gcov-12 --capture --directory build/debug-conan --output-file coverage.info
+          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
           # Upload report to CodeCov
           bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
 
