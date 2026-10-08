@@ -34,13 +34,13 @@ target_include_directories(CMT PRIVATE source)
 
 
 ### Find dependencies
-find_package(h5pp       1.11.1  REQUIRED)
-find_package(Eigen3     3.4.0   REQUIRED)
-find_package(spdlog     1.13.0  REQUIRED)
+find_package(h5pp       1.11.3  REQUIRED)
+find_package(Eigen3     5.0.0   REQUIRED)
+find_package(spdlog     1.16.0  REQUIRED)
 find_package(pcg-cpp            REQUIRED)
-find_package(doctest    2.4.1   REQUIRED)
+find_package(doctest    2.5.3   REQUIRED)
 find_package(nanobench  4.3.11  REQUIRED)
-find_package(CLI11      2.3.2   REQUIRED)
+find_package(CLI11      2.7.2   REQUIRED)
 
 
 ### Create a helper target that links dependencies (this target can be used to build tests and benchmarks)
